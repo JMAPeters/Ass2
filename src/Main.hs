@@ -10,6 +10,9 @@ import System.Environment
 import System.IO
 import Network.Socket
 
+-- https://wiki.haskell.org/Implement_a_chat_server
+
+
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
@@ -23,10 +26,10 @@ main = do
   putStrLn $ "My initial neighbours are " ++ show neighbours
 
   -- Listen to the specified port.
-  serverSocket <- socket AF_INET Stream 0
-  setSocketOption serverSocket ReuseAddr 1
-  bind serverSocket $ portToAddress me
-  listen serverSocket 1024
+  serverSocket <- socket AF_INET Stream 0     -- create socket
+  setSocketOption serverSocket ReuseAddr 1    -- make socket reusable
+  bind serverSocket $ portToAddress me        -- listen on 'me' port
+  listen serverSocket 1024                    -- set a max of 1024 queued connections
   -- Let a seperate thread listen for incomming connections
   _ <- forkIO $ listenForConnections serverSocket
 
@@ -75,9 +78,9 @@ connectSocket portNumber = connect'
 
 listenForConnections :: Socket -> IO ()
 listenForConnections serverSocket = do
-  (connection, _) <- accept serverSocket
-  _ <- forkIO $ handleConnection connection
-  listenForConnections serverSocket
+  (connection, _) <- accept serverSocket      -- accept a connection and handle it
+  _ <- forkIO $ handleConnection connection   -- do server logic
+  listenForConnections serverSocket           -- repeat
 
 handleConnection :: Socket -> IO ()
 handleConnection connection = do
