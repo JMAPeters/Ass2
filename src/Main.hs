@@ -1,5 +1,5 @@
-
 module Main where
+import Functions
 
 import Control.Monad
 import Control.Concurrent
@@ -46,6 +46,8 @@ main = do
       -- Use `hPutStrLn chandle` instead of `putStrLn`,
       -- and `hGetLine  chandle` instead of `getLine`.
       -- You can close a connection with `hClose chandle`.
+
+      -------------------------------------------------------------------------------
       hPutStrLn chandle $ "Hi process " ++ show neighbour ++ "! I'm process " ++ show me ++ " and you are my first neighbour."
       putStrLn "I sent a message to the neighbour"
       message <- hGetLine chandle
@@ -53,40 +55,3 @@ main = do
       hClose chandle
 
   threadDelay 1000000000
-
-readCommandLineArguments :: IO (Int, [Int])
-readCommandLineArguments = do
-  args <- getArgs
-  case args of
-    [] -> error "Not enough arguments. You should pass the port number of the current process and a list of neighbours"
-    (me:neighbours) -> return (read me, map read neighbours)
-
-portToAddress :: Int -> SockAddr
-portToAddress portNumber = SockAddrInet (fromIntegral portNumber) (tupleToHostAddress (127, 0, 0, 1)) -- localhost
-
-connectSocket :: Int -> IO Socket
-connectSocket portNumber = connect'
-  where
-    connect' = do
-      client <- socket AF_INET Stream 0
-      result <- try $ connect client $ portToAddress portNumber
-      case result :: Either IOException () of
-        Left _ -> do
-          threadDelay 1000000
-          connect'
-        Right _ -> return client
-
-listenForConnections :: Socket -> IO ()
-listenForConnections serverSocket = do
-  (connection, _) <- accept serverSocket      -- accept a connection and handle it
-  _ <- forkIO $ handleConnection connection   -- do server logic
-  listenForConnections serverSocket           -- repeat
-
-handleConnection :: Socket -> IO ()
-handleConnection connection = do
-  putStrLn "Got new incomming connection"
-  chandle <- socketToHandle connection ReadWriteMode
-  hPutStrLn chandle "Welcome"
-  message <- hGetLine chandle
-  putStrLn $ "Incomming connection send a message: " ++ message
-  hClose chandle
