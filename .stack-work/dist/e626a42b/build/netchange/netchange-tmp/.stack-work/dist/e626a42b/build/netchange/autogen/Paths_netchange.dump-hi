@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2019-12-03 14:27:47.611692 UTC
+2019-12-05 14:54:44.8500012 UTC
 
 interface main:Paths_netchange 8065
-  interface hash: 3160d8a450214d7f18cffc48ae8ce4ef
-  ABI hash: 3d117675fa49afcd317df42f9f16e174
+  interface hash: 8339d6e769a2c34960cab730dec36bcb
+  ABI hash: a22f7259d2dd6863d916c4f28c575b59
   export-list hash: a0cecd232d23a282b7e21246c5660848
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 389a84f5947632b79742a89d288de29d
@@ -41,7 +41,7 @@ import  -/  base-4.12.0.0:Prelude 80c668cb99fbafebd524c5e897f8c982
 import  -/  base-4.12.0.0:System.Environment 045df705c1f205b31d24a0f6340ea2db
 import  -/  ghc-prim-0.5.3:GHC.Types 57064c9f957b09bc2e360061ad5cae0b
 addDependentFile "C:\Users\jornp\AppData\Local\Programs\stack\x86_64-windows\ghc-8.6.5\lib\include\ghcversion.h" 43db44f9bb88490c2fa995e5f5ec33f2
-addDependentFile ".stack-work\dist\e626a42b\build\netchange\autogen\cabal_macros.h" 4830e453d0085db6a370afee8aa738d2
+addDependentFile ".stack-work\dist\e626a42b\build\netchange\autogen\cabal_macros.h" 3679029e3c01f03aae45d23ee4e10417
 4741d8c0a1616661111cfd2a7f7f4887
   $trModule :: GHC.Types.Module
   {- HasNoCafRefs, Strictness: m,
@@ -346,14 +346,14 @@ f7f4123565a9dfd385cf9a3aec2f5e23
 42b5c066016cc8072f2885a728a5cb0e
   getDynLibDir7 :: GHC.Prim.Addr#
   {- HasNoCafRefs, Unfolding: ("netchange_dynlibdir"#) -}
-2e874c06de9cdd7581fafa22604a886a
+ccc3b3e7473e58d22dc43dc42cc0815f
   getLibDir :: GHC.Types.IO GHC.IO.FilePath
   {- Arity: 1, Strictness: <S,U>,
      Unfolding: InlineRule (0, True, True)
                 Paths_netchange.getLibDir1
                   `cast`
                 (Sym (GHC.Types.N:IO[0] <GHC.Base.String>_R)) -}
-796ad27b872c4253b529b487788dbc44
+af5e928d41a569e4b7f84f4e61369a7f
   getLibDir1 ::
     GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, GHC.Base.String #)
@@ -365,7 +365,7 @@ f7f4123565a9dfd385cf9a3aec2f5e23
                    Paths_netchange.getLibDir5
                    Paths_netchange.getLibDir2
                    eta) -}
-ce9ff4385ac48ab0e5668bee9c0b4023
+1d338ba860e961daee9d165c55b8308f
   getLibDir2 ::
     GHC.Exception.Type.SomeException
     -> GHC.Prim.State# GHC.Prim.RealWorld
@@ -390,14 +390,14 @@ ce9ff4385ac48ab0e5668bee9c0b4023
                         wild
                         eta
                    GHC.Types.True -> (# eta, Paths_netchange.getLibDir3 #) } }) -}
-8f46e59efe713f29fed71bd089f03da6
+c362b9a7da9312f8db540c39e5d75f81
   getLibDir3 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString#
                    Paths_netchange.getLibDir4) -}
-444b695dd6a6d1b6f1fa0f01a7808398
+2f60af7714c777ee976584759ed483af
   getLibDir4 :: GHC.Prim.Addr#
   {- HasNoCafRefs,
-     Unfolding: ("D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\lib\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0-HpQ7uPO5Dau3Y1lRfCjl7g-netchange"#) -}
+     Unfolding: ("D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\lib\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0-IDQWybcM5y8CHjr79JD5K9-netchange"#) -}
 655cea623181d3e017ccdbb4e80e0098
   getLibDir5 ::
     GHC.Prim.State# GHC.Prim.RealWorld

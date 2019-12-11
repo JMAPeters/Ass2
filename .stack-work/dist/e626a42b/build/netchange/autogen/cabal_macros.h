@@ -66,6 +66,17 @@
   (major1) == 2 && (major2) == 5 && (minor) <= 0)
 #endif /* MIN_VERSION_stm */
 
+/* package unordered-containers-0.2.10.0 */
+#ifndef VERSION_unordered_containers
+#define VERSION_unordered_containers "0.2.10.0"
+#endif /* VERSION_unordered_containers */
+#ifndef MIN_VERSION_unordered_containers
+#define MIN_VERSION_unordered_containers(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  2 || \
+  (major1) == 0 && (major2) == 2 && (minor) <= 10)
+#endif /* MIN_VERSION_unordered_containers */
+
 /* tool alex-3.2.4 */
 #ifndef TOOL_VERSION_alex
 #define TOOL_VERSION_alex "3.2.4"
@@ -188,7 +199,7 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "netchange-0.1.0.0-HpQ7uPO5Dau3Y1lRfCjl7g-netchange"
+#define CURRENT_COMPONENT_ID "netchange-0.1.0.0-IDQWybcM5y8CHjr79JD5K9-netchange"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

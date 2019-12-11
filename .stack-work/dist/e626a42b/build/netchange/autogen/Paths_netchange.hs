@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\bin"
-libdir     = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\lib\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0-HpQ7uPO5Dau3Y1lRfCjl7g-netchange"
+libdir     = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\lib\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0-IDQWybcM5y8CHjr79JD5K9-netchange"
 dynlibdir  = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\lib\\x86_64-windows-ghc-8.6.5"
 datadir    = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\share\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0"
 libexecdir = "D:\\Doucmenten\\Universiteit\\Concurrency\\Jaar 3\\Ass2\\.stack-work\\install\\8bd22936\\libexec\\x86_64-windows-ghc-8.6.5\\netchange-0.1.0.0"

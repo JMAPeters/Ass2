@@ -1,0 +1,26 @@
+1 ------ 2 ------ 3
+
+routing table 
+    NB1(3) = 2 // om naar 3 een bericht te sturen moet het bericht via 2 gaan
+    NB1(2) = 2
+        2 krijgt bericht van 1 en kijkt of het voor hem is, als dat niet is kijkt hij in zijn routing table naar welke node hij het moet sturen
+estemated distance van node naar andere node
+
+
+vragen:
+
+has changed in recompute
+
+vragen input & waarom we niet in de cmd kunnen typen
+
+
+
+
+
+
+
+
+
+1 ------ 2 ------ 3
+ \               /
+   ----- 4 -----

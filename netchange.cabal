@@ -26,6 +26,9 @@ executable netchange
 
   other-modules:
       Paths_netchange
+    , NetworkFunctions
+    , Initialisation
+    , DataTypes
 
   ghc-options:
       -Wall
@@ -39,4 +42,5 @@ executable netchange
     , dejafu
     , stm
     , network
+    , unordered-containers
 
