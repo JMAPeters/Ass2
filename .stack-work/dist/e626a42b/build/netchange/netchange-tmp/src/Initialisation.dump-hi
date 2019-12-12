@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2019-12-11 14:19:46.3981185 UTC
+2019-12-12 09:54:11.3721125 UTC
 
 interface main:Initialisation 8065
-  interface hash: f957883c27c4d91194193ff0346c62a9
-  ABI hash: e03166a509e66099c76288ba2078e3bd
+  interface hash: 9a421468a2795c1f85dadde493340919
+  ABI hash: f8a4dc682097eeeeb6503d879e885e5b
   export-list hash: d72c8338fe6bd861dda7a35cacf2cf7d
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 36bae2b893636dcae15825da56d2f484
@@ -60,14 +60,14 @@ import  -/  base-4.12.0.0:Prelude 80c668cb99fbafebd524c5e897f8c982
 import  -/  base-4.12.0.0:System.Environment 045df705c1f205b31d24a0f6340ea2db
 import  -/  base-4.12.0.0:System.IO 51ffc52e2e8495d5c7b596557cf2be89
 import  -/  ghc-prim-0.5.3:GHC.Types 57064c9f957b09bc2e360061ad5cae0b
-import  -/  DataTypes d32ebe565fe4942a652ee2be14d63809
+import  -/  DataTypes dadd4f7d87061aecd84defbe1057470d
   exports: 6f4e5eb89d776ab7e359de84ce58688f
   Path aff8094f35f218b4b19aa6cda71db463
   Port 352e18570b51b10ff1762f7515540820
   Udef 2a82cfe38010e8ee7768bb69aa142510
-import  -/  NetworkFunctions f35a4a590dc0e814a2636825080192fd
+import  -/  NetworkFunctions 910e3ffa244e2463e542b3a68f4fc14a
   exports: 6848103f0cf0e2ff13c13ebf03bd0c08
-  connectSocket ee315b646fb1e1ea7c9d3685f623b27c
+  connectSocket 6d13438f3b2336e3f02c67536b38e72c
 import  -/  network-2.8.0.1:Network.Socket cccb3c178b1f8d4043b518ed5f994246
 import  -/  stm-2.5.0.0:Control.Concurrent.STM c418f6f5d5174c7fcc2a4eb1734356a3
 import  -/  unordered-containers-0.2.10.0:Data.HashMap.Base bb401e756b294adc833e9f91ee987a2e
@@ -263,7 +263,7 @@ f3d8ac196b59537e866a234b70a99815
           Data.HashMap.Base.HashMap DataTypes.Port v #)
   {- Arity: 6, Strictness: <L,U><L,U><L,U><L,U><S,1*U><L,U>,
      Inline: [2] -}
-e0742e19bae1546457ec31f6f9e74933
+63483d73fa748c9edd86ac5d8b4aef0e
   connectTo ::
     DataTypes.Port -> GHC.Types.IO GHC.IO.Handle.Types.Handle
   {- Arity: 2, Strictness: <L,1*U(U)><S,U>,
@@ -272,7 +272,7 @@ e0742e19bae1546457ec31f6f9e74933
                   `cast`
                 (<DataTypes.Port>_R
                  ->_R Sym (GHC.Types.N:IO[0] <GHC.IO.Handle.Types.Handle>_R)) -}
-9b3126b8973a8f4ed4febd9116cc81ab
+b88c8ed1e0252e5361bcccae4af58626
   connectTo1 ::
     DataTypes.Port
     -> GHC.Prim.State# GHC.Prim.RealWorld
@@ -292,7 +292,7 @@ e0742e19bae1546457ec31f6f9e74933
                    ww7
                    GHC.IO.IOMode.ReadWriteMode
                    ipv } } }) -}
-fb6f12fa2b46b13396b21364202a7ad7
+28f9cc5179299c38a733b6d9fdbf0001
   makeConnection ::
     [DataTypes.Port]
     -> Data.HashMap.Base.HashMap

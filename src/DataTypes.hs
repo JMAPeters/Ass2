@@ -12,7 +12,7 @@ import Data.HashMap.Lazy
 
 data Node = Node {
             me :: Port                                           -- portnumber
-          , neighbours :: [Port]                                 -- list of portnumbers
+          , neighbours :: IORef [Port]                                 -- list of portnumbers
           , allNodes :: IORef [Port]                             -- list of all nodes
           , neighConnection :: IORef (HashMap Port (IO Handle))  -- connection to neighbours
           , routingTable :: IORef (HashMap Port Path)            -- hashmap of portnumber and path (path is local/ portnumber/ udef)
@@ -20,7 +20,7 @@ data Node = Node {
           , estDistNeigh :: IORef (HashMap (Port, Port) Int)     -- hashmap of (portnumber, portnumber) and distance
 }
 
-makeNode :: (Port, [Port], IORef [Port], IORef (HashMap Port (IO Handle)), IORef (HashMap Port Path), IORef (HashMap Port Int), IORef (HashMap (Port, Port) Int)) -> Node
+makeNode :: (Port, IORef [Port], IORef [Port], IORef (HashMap Port (IO Handle)), IORef (HashMap Port Path), IORef (HashMap Port Int), IORef (HashMap (Port, Port) Int)) -> Node
 makeNode (me, neighbours, allNodes, neighConnection, routingTable, estDist, estDistNeigh) =
     Node me neighbours allNodes neighConnection routingTable estDist estDistNeigh
 

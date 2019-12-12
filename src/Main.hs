@@ -1,7 +1,6 @@
 module Main where
 import NetworkFunctions
 import DataTypes
-import Initialisation
 
 import Control.Monad
 import Control.Concurrent
@@ -12,7 +11,7 @@ import System.Environment
 import System.IO
 import Network.Socket
 import Data.HashMap.Lazy
-import Data.List
+import Data.List (intercalate, delete)
 
 main :: IO ()
 main = do
@@ -20,16 +19,17 @@ main = do
 
   lock <- getLock
 
-  (me, neighbours) <- readCommandLineArguments
-  allNodes <- newIORef (me:neighbours)
+  (me, _neighbours) <- readCommandLineArguments
+  neighbours <- newIORef _neighbours
+  allNodes <- newIORef (me:_neighbours)
   neighConnection <- newIORef empty
   routingTable <- newIORef (singleton me Local)
   estDist <- newIORef (singleton me 0)
   estDistNeigh <- newIORef empty
   let node = makeNode (me, neighbours, allNodes, neighConnection, routingTable, estDist, estDistNeigh)
 
-  putStrLn $ "I should be listening on port " ++ show me
-  putStrLn $ "My initial neighbours are " ++ show neighbours
+  putStrLn $ "//I should be listening on port " ++ show me
+  putStrLn $ "//My initial neighbours are " ++ show _neighbours
 
   -- Listen to the specified port.
   serverSocket <- socket AF_INET Stream 0     -- create socket
@@ -39,16 +39,16 @@ main = do
 
 --------------------------------------------------------------------------------
   -- Initialization
+  _neighbours <- readIORef neighbours
   -- make connection with neighbours
-  writeIORef neighConnection (makeConnection neighbours)
+  writeIORef neighConnection (makeConnection _neighbours)
   -- make routingtable (Nb)
   _routingTable <- readIORef routingTable
-  writeIORef routingTable (makeRoutingTable neighbours _routingTable)
+  writeIORef routingTable (makeRoutingTable _neighbours _routingTable)
   -- make estemated distance (D)
   _estDist <- readIORef estDist
   _allNodes <- readIORef allNodes
-  writeIORef estDist (makeEstDist neighbours (length _allNodes) _estDist) -- lenght of neighbour list plus self
-  -- make estDistNeigh (ndis) ?????????????????????? 
+  writeIORef estDist (makeEstDist _neighbours (length _allNodes) _estDist) -- lenght of neighbour list plus self
 
   -- Let a seperate thread listen for incomming connections
   _ <- forkIO $ listenForConnections serverSocket node lock
@@ -87,6 +87,26 @@ handleInput node lock = do
         else
             putStrLn "Port number is not known"
         interlocked lock "Unlock"
+    ("C") -> do
+        interlocked lock "Lock"
+        _neighbours <- readIORef (neighbours node)
+        writeIORef (neighbours node) (portNumber : _neighbours)
+        _neighConnection <- readIORef (neighConnection node)
+        writeIORef (neighConnection node) (insert portNumber (connectTo portNumber) _neighConnection)
+        
+        _neighConnection <- readIORef (neighConnection node)
+        _neighCon <- (_neighConnection ! portNumber)
+        hPutStrLn _neighCon (show (me node) ++ " repair")
+
+        interlocked lock "Unlock"
+    ("D") -> do
+      interlocked lock "Lock"
+      _neighConnection <- readIORef (neighConnection node)
+      _neighCon <- (_neighConnection ! portNumber)
+      hPutStrLn _neighCon (show (me node) ++ " disconnect")
+      interlocked lock "Unlock"
+
+      processDisconnect node lock portNumber
   handleInput node lock
 
 parseInput :: String -> (String, Port, String)
@@ -104,3 +124,14 @@ printTable node portNumber = do
     _routingTable <-readIORef (routingTable node)
     let via = _routingTable ! portNumber
     putStrLn ((show portNumber) ++ " " ++ (show dist) ++ " " ++ (show via))
+
+
+    {-_allNodes <- readIORef (allNodes node)
+        forM_ _allNodes $ \_node -> do
+            _estDistNeigh <- readIORef (estDistNeigh node)
+            writeIORef (estDistNeigh node) (insert (portNumber, _node) (length _allNodes) _estDistNeigh)
+            _neighConnection <- readIORef (neighConnection node)
+            _neighCon <- (_neighConnection ! portNumber)
+            _estDist <- readIORef (estDist node)
+            hPutStrLn _neighCon (show (me node) ++ " mydist " ++ show _node ++ " " ++ (show (_estDist ! _node)))
+         -}

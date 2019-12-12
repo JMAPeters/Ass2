@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2019-12-11 12:20:04.477775 UTC
+2019-12-11 15:15:24.8974707 UTC
 
 interface main:DataTypes 8065
-  interface hash: daf8e9944f74174330a3e2b61c525e01
-  ABI hash: d32ebe565fe4942a652ee2be14d63809
+  interface hash: c67ecbad34b8422a46f9647f8f4aa2d8
+  ABI hash: dadd4f7d87061aecd84defbe1057470d
   export-list hash: 6f4e5eb89d776ab7e359de84ce58688f
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 36bae2b893636dcae15825da56d2f484
@@ -336,10 +336,10 @@ aff8094f35f218b4b19aa6cda71db463
                       (# s2#, GHC.Tuple.() #) } }) -}
 c0d1d948e3b03977e141e8626010c1b0
   data Lock = MVarLock (GHC.MVar.MVar ())
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   data Node
     = Node {me :: DataTypes.Port,
-            neighbours :: [DataTypes.Port],
+            neighbours :: GHC.IORef.IORef [DataTypes.Port],
             allNodes :: GHC.IORef.IORef [DataTypes.Port],
             neighConnection :: GHC.IORef.IORef
                                  (Data.HashMap.Base.HashMap
@@ -355,7 +355,7 @@ aff8094f35f218b4b19aa6cda71db463
   data Path = Local | Portnumber DataTypes.Port | Udef
 352e18570b51b10ff1762f7515540820
   type Port = GHC.Types.Int
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   allNodes :: DataTypes.Node -> GHC.IORef.IORef [DataTypes.Port]
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
@@ -364,7 +364,7 @@ e37cc29431f49f5273b3399028593b7b
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds3 }) -}
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   estDist ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -376,7 +376,7 @@ e37cc29431f49f5273b3399028593b7b
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds6 }) -}
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   estDistNeigh ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -445,9 +445,9 @@ dbe2f9910dc23c949d73e4916ee0bd2c
 d89b5c310183e4eb660038c8c52e6c36
   interlocked5 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# DataTypes.$tcLock2) -}
-0c7c7ba64175da9b1e9748bc2bc11e08
+44cf9e398fbc779d03c29dc467519599
   makeNode ::
-    (DataTypes.Port, [DataTypes.Port],
+    (DataTypes.Port, GHC.IORef.IORef [DataTypes.Port],
      GHC.IORef.IORef [DataTypes.Port],
      GHC.IORef.IORef
        (Data.HashMap.Base.HashMap
@@ -462,7 +462,7 @@ d89b5c310183e4eb660038c8c52e6c36
     -> DataTypes.Node
   {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U(U,U,U,U,U,U,U)>m,
      Unfolding: InlineRule (1, True, False)
-                (\ (ds :: (DataTypes.Port, [DataTypes.Port],
+                (\ (ds :: (DataTypes.Port, GHC.IORef.IORef [DataTypes.Port],
                            GHC.IORef.IORef [DataTypes.Port],
                            GHC.IORef.IORef
                              (Data.HashMap.Base.HashMap
@@ -483,7 +483,7 @@ d89b5c310183e4eb660038c8c52e6c36
                    routingTable1
                    estDist1
                    estDistNeigh1 }) -}
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   me :: DataTypes.Node -> DataTypes.Port
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
@@ -492,7 +492,7 @@ e37cc29431f49f5273b3399028593b7b
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds1 }) -}
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   neighConnection ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -505,16 +505,16 @@ e37cc29431f49f5273b3399028593b7b
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds4 }) -}
-e37cc29431f49f5273b3399028593b7b
-  neighbours :: DataTypes.Node -> [DataTypes.Port]
+c289d91df4ad856d9b73e4bf244515ec
+  neighbours :: DataTypes.Node -> GHC.IORef.IORef [DataTypes.Port]
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
-     Strictness: <S(LSLLLLL),1*U(A,1*U,A,A,A,A,A)>,
+     Strictness: <S(LSLLLLL),1*U(A,1*U(U),A,A,A,A,A)>m,
      Unfolding: InlineRule (1, True, False)
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds2 }) -}
-e37cc29431f49f5273b3399028593b7b
+c289d91df4ad856d9b73e4bf244515ec
   routingTable ::
     DataTypes.Node
     -> GHC.IORef.IORef

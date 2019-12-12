@@ -1,11 +1,11 @@
 
 ==================== FINAL INTERFACE ====================
-2019-12-11 14:19:45.8964745 UTC
+2019-12-12 11:48:38.6206471 UTC
 
 interface main:NetworkFunctions 8065
-  interface hash: f0041ad3245f7120adeafd6ab57eecb5
-  ABI hash: f35a4a590dc0e814a2636825080192fd
-  export-list hash: 6848103f0cf0e2ff13c13ebf03bd0c08
+  interface hash: 2835867e44907aeb0164237c388d1316
+  ABI hash: e530cc492c6b6e1527b1b4931ba34d3c
+  export-list hash: df41b3a0d1c06a7c0e3998423e0530a9
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 36bae2b893636dcae15825da56d2f484
   opt_hash: 6faf2de08de32d19db9870899d88e59a
@@ -16,13 +16,20 @@ interface main:NetworkFunctions 8065
   where
 exports:
   NetworkFunctions.connectSocket
+  NetworkFunctions.connectTo
+  NetworkFunctions.filterHashMap
   NetworkFunctions.getMinEstDistNeigh
   NetworkFunctions.handleConnection
   NetworkFunctions.listenForConnections
+  NetworkFunctions.makeConnection
+  NetworkFunctions.makeEstDist
+  NetworkFunctions.makeRoutingTable
   NetworkFunctions.parseMessage
   NetworkFunctions.portToAddress
+  NetworkFunctions.processDisconnect
   NetworkFunctions.processDist
   NetworkFunctions.processMessage
+  NetworkFunctions.processRepair
   NetworkFunctions.readCommandLineArguments
   NetworkFunctions.recompute
 module dependencies: DataTypes
@@ -72,6 +79,7 @@ import  -/  base-4.12.0.0:GHC.Err 3a680f55541fe399f95f794018fc3593
 import  -/  base-4.12.0.0:GHC.IO.Exception 99271e07ec0e09b76d45c79794dad266
 import  -/  base-4.12.0.0:GHC.IO.Handle 5b3f689b082eee6e7562e9b58323b91a
 import  -/  base-4.12.0.0:GHC.IO.Handle.Text 2ca19f0c4c6b23c3ad9d1464d36c5281
+import  -/  base-4.12.0.0:GHC.IO.Handle.Types b0667350495b7969f4b13a8e9686d1b4
 import  -/  base-4.12.0.0:GHC.IO.IOMode 64e15bc6e405c4ae814493543509e7ab
 import  -/  base-4.12.0.0:GHC.IORef 08be4ed51bab2548b874b071705c05a2
 import  -/  base-4.12.0.0:GHC.List bb56c56a8dc21963b5824914872db158
@@ -84,20 +92,22 @@ import  -/  base-4.12.0.0:System.IO 51ffc52e2e8495d5c7b596557cf2be89
 import  -/  base-4.12.0.0:Text.Read 580457154dc9d710b792a13b428d58dd
 import  -/  ghc-prim-0.5.3:GHC.Classes 6002495dc43e58d28c87e5e5e058752a
 import  -/  ghc-prim-0.5.3:GHC.Types 57064c9f957b09bc2e360061ad5cae0b
-import  -/  DataTypes d32ebe565fe4942a652ee2be14d63809
+import  -/  DataTypes dadd4f7d87061aecd84defbe1057470d
   exports: 6f4e5eb89d776ab7e359de84ce58688f
   Lock c0d1d948e3b03977e141e8626010c1b0
-  Node e37cc29431f49f5273b3399028593b7b
+  Node c289d91df4ad856d9b73e4bf244515ec
+  Path aff8094f35f218b4b19aa6cda71db463
   Port 352e18570b51b10ff1762f7515540820
   Portnumber 8467d87902103d0a88753fdd9aea0afa
   Udef 2a82cfe38010e8ee7768bb69aa142510
-  allNodes e37cc29431f49f5273b3399028593b7b
-  estDist e37cc29431f49f5273b3399028593b7b
-  estDistNeigh e37cc29431f49f5273b3399028593b7b
+  allNodes c289d91df4ad856d9b73e4bf244515ec
+  estDist c289d91df4ad856d9b73e4bf244515ec
+  estDistNeigh c289d91df4ad856d9b73e4bf244515ec
   interlocked 1236afa38e4671a8ee8b0d793b90d786
-  me e37cc29431f49f5273b3399028593b7b
-  neighConnection e37cc29431f49f5273b3399028593b7b
-  routingTable e37cc29431f49f5273b3399028593b7b
+  me c289d91df4ad856d9b73e4bf244515ec
+  neighConnection c289d91df4ad856d9b73e4bf244515ec
+  neighbours c289d91df4ad856d9b73e4bf244515ec
+  routingTable c289d91df4ad856d9b73e4bf244515ec
 import  -/  network-2.8.0.1:Network.Socket cccb3c178b1f8d4043b518ed5f994246
 import  -/  network-2.8.0.1:Network.Socket.Types 8885d0583783d86ae72c97c90ee0757a
 import  -/  stm-2.5.0.0:Control.Concurrent.STM c418f6f5d5174c7fcc2a4eb1734356a3
@@ -126,8 +136,157 @@ e8d438a8277d1e530af97d98e9cb048a
 7bb54ea3c3100a87012b3109f8c5ef81
   $trModule4 :: GHC.Prim.Addr#
   {- HasNoCafRefs, Unfolding: ("main"#) -}
-a61e13269908671e63f3bae9ed82f805
+6299f476668438793aa8d65b9c1afdf6
   $w$s$wupdateOrSnocWithKey ::
+    (DataTypes.Port -> v -> v -> v)
+    -> GHC.Prim.Int#
+    -> v
+    -> Data.HashMap.Array.Array#
+         (Data.HashMap.Base.Leaf DataTypes.Port v)
+    -> Data.HashMap.Array.Array
+         (Data.HashMap.Base.Leaf DataTypes.Port v)
+  {- Arity: 4, Strictness: <L,C(C1(C1(U)))><S,U><L,U><S,U>,
+     Inline: [2],
+     Unfolding: (\ @ v
+                   (w :: DataTypes.Port -> v -> v -> v)
+                   (ww :: GHC.Prim.Int#)
+                   (w1 :: v)
+                   (w2 :: Data.HashMap.Array.Array#
+                            (Data.HashMap.Base.Leaf DataTypes.Port v)) ->
+                 let {
+                   exit :: v
+                           -> Data.HashMap.Array.Array#
+                                (Data.HashMap.Base.Leaf DataTypes.Port v)
+                           -> GHC.Prim.Int#
+                           -> DataTypes.Port
+                           -> v
+                           -> Data.HashMap.Array.Array
+                                (Data.HashMap.Base.Leaf DataTypes.Port v)
+                     <join 5> {- Arity: 5, Strictness: <L,U><S,U><S,U><L,U><L,U> -}
+                   = \ (w3 :: v)[OneShot]
+                       (ww1 :: Data.HashMap.Array.Array#
+                                 (Data.HashMap.Base.Leaf DataTypes.Port v))[OneShot]
+                       (ww2 :: GHC.Prim.Int#)[OneShot]
+                       (k2 :: DataTypes.Port)[OneShot]
+                       (y :: v)[OneShot] ->
+                     case GHC.Magic.runRW#
+                            @ ('GHC.Types.TupleRep
+                                 '[ 'GHC.Types.TupleRep '[], 'GHC.Types.LiftedRep])
+                            @ (# GHC.Prim.State# GHC.Prim.RealWorld,
+                                 Data.HashMap.Array.Array
+                                   (Data.HashMap.Base.Leaf DataTypes.Port v) #)
+                            (\ (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                             case GHC.Prim.thawSmallArray#
+                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                    @ GHC.Prim.RealWorld
+                                    ww1
+                                    0#
+                                    (GHC.Prim.sizeofSmallArray#
+                                       @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                       ww1)
+                                    s1 of ds2 { (#,#) ipv4 ipv5 ->
+                             case GHC.Prim.writeSmallArray#
+                                    @ GHC.Prim.RealWorld
+                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                    ipv5
+                                    ww2
+                                    (Data.HashMap.Base.L @ DataTypes.Port @ v k2 (w k2 w3 y))
+                                    ipv4 of s' { DEFAULT ->
+                             case GHC.Prim.unsafeFreezeSmallArray#
+                                    @ GHC.Prim.RealWorld
+                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                    ipv5
+                                    s' of ds3 { (#,#) ipv6 ipv7 ->
+                             (# ipv6,
+                                Data.HashMap.Array.Array
+                                  @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                  ipv7 #) } } }) of ds2 { (#,#) ipv4 ipv5 ->
+                     ipv5 }
+                 } in
+                 letrec {
+                   $wgo1 :: GHC.Prim.Int#
+                            -> v
+                            -> Data.HashMap.Array.Array#
+                                 (Data.HashMap.Base.Leaf DataTypes.Port v)
+                            -> GHC.Prim.Int#
+                            -> GHC.Prim.Int#
+                            -> Data.HashMap.Array.Array
+                                 (Data.HashMap.Base.Leaf DataTypes.Port v)
+                     <join 5> {- Arity: 5, Strictness: <L,U><L,U><S,U><S,U><S,U>,
+                                 Inline: [2] -}
+                   = \ (ww1 :: GHC.Prim.Int#)
+                       (w3 :: v)
+                       (ww2 :: Data.HashMap.Array.Array#
+                                 (Data.HashMap.Base.Leaf DataTypes.Port v))
+                       (ww3 :: GHC.Prim.Int#)
+                       (ww4 :: GHC.Prim.Int#) ->
+                     case GHC.Prim.>=# ww3 ww4 of lwild {
+                       DEFAULT
+                       -> case GHC.Prim.indexSmallArray#
+                                 @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                 ww2
+                                 ww3 of ds1 { Unit# ipv3 ->
+                          case ipv3 of wild1 { Data.HashMap.Base.L kx y ->
+                          case kx of wild2 { GHC.Types.I# y1 ->
+                          case GHC.Prim.==# ww1 y1 of lwild1 {
+                            DEFAULT -> $wgo1 ww1 w3 ww2 (GHC.Prim.+# ww3 1#) ww4
+                            1# -> exit w3 ww2 ww3 (GHC.Types.I# ww1) y } } } }
+                       1#
+                       -> case GHC.Magic.runRW#
+                                 @ ('GHC.Types.TupleRep
+                                      '[ 'GHC.Types.TupleRep '[], 'GHC.Types.LiftedRep])
+                                 @ (# GHC.Prim.State# GHC.Prim.RealWorld,
+                                      Data.HashMap.Array.Array
+                                        (Data.HashMap.Base.Leaf DataTypes.Port v) #)
+                                 (\ (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                                  case GHC.Prim.newSmallArray#
+                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                         @ GHC.Prim.RealWorld
+                                         (GHC.Prim.+# ww4 1#)
+                                         (Data.HashMap.Array.undefinedElem
+                                            @ (Data.HashMap.Base.Leaf DataTypes.Port v))
+                                         s1 of ds { (#,#) ipv3 ipv4 ->
+                                  case GHC.Prim.copySmallArray#
+                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                         @ GHC.Prim.RealWorld
+                                         ww2
+                                         0#
+                                         ipv4
+                                         0#
+                                         ww4
+                                         ipv3 of s2 { DEFAULT ->
+                                  case GHC.Prim.writeSmallArray#
+                                         @ GHC.Prim.RealWorld
+                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                         ipv4
+                                         ww4
+                                         (Data.HashMap.Base.L
+                                            @ DataTypes.Port
+                                            @ v
+                                            (GHC.Types.I# ww1)
+                                            w3)
+                                         s2 of s' { DEFAULT ->
+                                  case GHC.Prim.unsafeFreezeSmallArray#
+                                         @ GHC.Prim.RealWorld
+                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                         ipv4
+                                         s' of ds2 { (#,#) ipv5 ipv6 ->
+                                  (# ipv5,
+                                     Data.HashMap.Array.Array
+                                       @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                                       ipv6 #) } } } }) of ds1 { (#,#) ipv3 ipv4 ->
+                          ipv4 } }
+                 } in
+                 $wgo1
+                   ww
+                   w1
+                   w2
+                   0#
+                   (GHC.Prim.sizeofSmallArray#
+                      @ (Data.HashMap.Base.Leaf DataTypes.Port v)
+                      w2)) -}
+d556d90706cefb4ffcad8acc39c2df90
+  $w$s$wupdateOrSnocWithKey1 ::
     ((DataTypes.Port, DataTypes.Port) -> v -> v -> v)
     -> DataTypes.Port
     -> DataTypes.Port
@@ -299,155 +458,6 @@ a61e13269908671e63f3bae9ed82f805
                    (GHC.Prim.sizeofSmallArray#
                       @ (Data.HashMap.Base.Leaf (DataTypes.Port, DataTypes.Port) v)
                       w2)) -}
-6636f367d9030098284376d72eea5248
-  $w$s$wupdateOrSnocWithKey1 ::
-    (DataTypes.Port -> v -> v -> v)
-    -> GHC.Prim.Int#
-    -> v
-    -> Data.HashMap.Array.Array#
-         (Data.HashMap.Base.Leaf DataTypes.Port v)
-    -> Data.HashMap.Array.Array
-         (Data.HashMap.Base.Leaf DataTypes.Port v)
-  {- Arity: 4, Strictness: <L,C(C1(C1(U)))><S,U><L,U><S,U>,
-     Inline: [2],
-     Unfolding: (\ @ v
-                   (w :: DataTypes.Port -> v -> v -> v)
-                   (ww :: GHC.Prim.Int#)
-                   (w1 :: v)
-                   (w2 :: Data.HashMap.Array.Array#
-                            (Data.HashMap.Base.Leaf DataTypes.Port v)) ->
-                 let {
-                   exit :: v
-                           -> Data.HashMap.Array.Array#
-                                (Data.HashMap.Base.Leaf DataTypes.Port v)
-                           -> GHC.Prim.Int#
-                           -> DataTypes.Port
-                           -> v
-                           -> Data.HashMap.Array.Array
-                                (Data.HashMap.Base.Leaf DataTypes.Port v)
-                     <join 5> {- Arity: 5, Strictness: <L,U><S,U><S,U><L,U><L,U> -}
-                   = \ (w3 :: v)[OneShot]
-                       (ww1 :: Data.HashMap.Array.Array#
-                                 (Data.HashMap.Base.Leaf DataTypes.Port v))[OneShot]
-                       (ww2 :: GHC.Prim.Int#)[OneShot]
-                       (k2 :: DataTypes.Port)[OneShot]
-                       (y :: v)[OneShot] ->
-                     case GHC.Magic.runRW#
-                            @ ('GHC.Types.TupleRep
-                                 '[ 'GHC.Types.TupleRep '[], 'GHC.Types.LiftedRep])
-                            @ (# GHC.Prim.State# GHC.Prim.RealWorld,
-                                 Data.HashMap.Array.Array
-                                   (Data.HashMap.Base.Leaf DataTypes.Port v) #)
-                            (\ (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
-                             case GHC.Prim.thawSmallArray#
-                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                    @ GHC.Prim.RealWorld
-                                    ww1
-                                    0#
-                                    (GHC.Prim.sizeofSmallArray#
-                                       @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                       ww1)
-                                    s1 of ds2 { (#,#) ipv4 ipv5 ->
-                             case GHC.Prim.writeSmallArray#
-                                    @ GHC.Prim.RealWorld
-                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                    ipv5
-                                    ww2
-                                    (Data.HashMap.Base.L @ DataTypes.Port @ v k2 (w k2 w3 y))
-                                    ipv4 of s' { DEFAULT ->
-                             case GHC.Prim.unsafeFreezeSmallArray#
-                                    @ GHC.Prim.RealWorld
-                                    @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                    ipv5
-                                    s' of ds3 { (#,#) ipv6 ipv7 ->
-                             (# ipv6,
-                                Data.HashMap.Array.Array
-                                  @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                  ipv7 #) } } }) of ds2 { (#,#) ipv4 ipv5 ->
-                     ipv5 }
-                 } in
-                 letrec {
-                   $wgo1 :: GHC.Prim.Int#
-                            -> v
-                            -> Data.HashMap.Array.Array#
-                                 (Data.HashMap.Base.Leaf DataTypes.Port v)
-                            -> GHC.Prim.Int#
-                            -> GHC.Prim.Int#
-                            -> Data.HashMap.Array.Array
-                                 (Data.HashMap.Base.Leaf DataTypes.Port v)
-                     <join 5> {- Arity: 5, Strictness: <L,U><L,U><S,U><S,U><S,U>,
-                                 Inline: [2] -}
-                   = \ (ww1 :: GHC.Prim.Int#)
-                       (w3 :: v)
-                       (ww2 :: Data.HashMap.Array.Array#
-                                 (Data.HashMap.Base.Leaf DataTypes.Port v))
-                       (ww3 :: GHC.Prim.Int#)
-                       (ww4 :: GHC.Prim.Int#) ->
-                     case GHC.Prim.>=# ww3 ww4 of lwild {
-                       DEFAULT
-                       -> case GHC.Prim.indexSmallArray#
-                                 @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                 ww2
-                                 ww3 of ds1 { Unit# ipv3 ->
-                          case ipv3 of wild1 { Data.HashMap.Base.L kx y ->
-                          case kx of wild2 { GHC.Types.I# y1 ->
-                          case GHC.Prim.==# ww1 y1 of lwild1 {
-                            DEFAULT -> $wgo1 ww1 w3 ww2 (GHC.Prim.+# ww3 1#) ww4
-                            1# -> exit w3 ww2 ww3 (GHC.Types.I# ww1) y } } } }
-                       1#
-                       -> case GHC.Magic.runRW#
-                                 @ ('GHC.Types.TupleRep
-                                      '[ 'GHC.Types.TupleRep '[], 'GHC.Types.LiftedRep])
-                                 @ (# GHC.Prim.State# GHC.Prim.RealWorld,
-                                      Data.HashMap.Array.Array
-                                        (Data.HashMap.Base.Leaf DataTypes.Port v) #)
-                                 (\ (s1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
-                                  case GHC.Prim.newSmallArray#
-                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                         @ GHC.Prim.RealWorld
-                                         (GHC.Prim.+# ww4 1#)
-                                         (Data.HashMap.Array.undefinedElem
-                                            @ (Data.HashMap.Base.Leaf DataTypes.Port v))
-                                         s1 of ds { (#,#) ipv3 ipv4 ->
-                                  case GHC.Prim.copySmallArray#
-                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                         @ GHC.Prim.RealWorld
-                                         ww2
-                                         0#
-                                         ipv4
-                                         0#
-                                         ww4
-                                         ipv3 of s2 { DEFAULT ->
-                                  case GHC.Prim.writeSmallArray#
-                                         @ GHC.Prim.RealWorld
-                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                         ipv4
-                                         ww4
-                                         (Data.HashMap.Base.L
-                                            @ DataTypes.Port
-                                            @ v
-                                            (GHC.Types.I# ww1)
-                                            w3)
-                                         s2 of s' { DEFAULT ->
-                                  case GHC.Prim.unsafeFreezeSmallArray#
-                                         @ GHC.Prim.RealWorld
-                                         @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                         ipv4
-                                         s' of ds2 { (#,#) ipv5 ipv6 ->
-                                  (# ipv5,
-                                     Data.HashMap.Array.Array
-                                       @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                                       ipv6 #) } } } }) of ds1 { (#,#) ipv3 ipv4 ->
-                          ipv4 } }
-                 } in
-                 $wgo1
-                   ww
-                   w1
-                   w2
-                   0#
-                   (GHC.Prim.sizeofSmallArray#
-                      @ (Data.HashMap.Base.Leaf DataTypes.Port v)
-                      w2)) -}
 bb2c88e202734064a73451d5bf5b5f8d
   $wgetMinEstDistNeigh ::
     DataTypes.Port
@@ -459,7 +469,7 @@ bb2c88e202734064a73451d5bf5b5f8d
     -> (# GHC.Prim.State# GHC.Prim.RealWorld,
           ((DataTypes.Port, DataTypes.Port), GHC.Types.Int) #)
   {- Arity: 3, Strictness: <L,U(U)><S,U><S,U>, Inline: [2] -}
-4a2ab958d3753e334c5ecbf201cbe491
+c839b2aeac2afeeff45b944d140d5028
   $whandleConnection ::
     Foreign.C.Types.CInt
     -> GHC.Prim.MVar#
@@ -469,85 +479,9 @@ bb2c88e202734064a73451d5bf5b5f8d
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 5,
-     Strictness: <L,U(U)><S,U><L,1*U(1*U(U),A,1*U(U),1*U(U),U(U),U(U),1*U(U))><L,1*U(1*U(U))><S,U>,
-     Inline: [2],
-     Unfolding: (\ (ww :: Foreign.C.Types.CInt)
-                   (ww1 :: GHC.Prim.MVar#
-                             GHC.Prim.RealWorld Network.Socket.Types.SocketStatus)
-                   (w :: DataTypes.Node)
-                   (w1 :: DataTypes.Lock)
-                   (w2 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
-                 case Network.Socket.$wsocketToHandle
-                        ww
-                        ww1
-                        GHC.IO.IOMode.ReadWriteMode
-                        w2 of ds1 { (#,#) ipv ipv1 ->
-                 case GHC.IO.Handle.Internals.wantReadableHandle_1
-                        @ GHC.Base.String
-                        GHC.IO.Handle.Text.hGetLine4
-                        ipv1
-                        GHC.IO.Handle.Text.hGetLine2
-                          `cast`
-                        (<GHC.IO.Handle.Types.Handle__>_R
-                         ->_R Sym (GHC.Types.N:IO[0] <GHC.Base.String>_R))
-                        ipv of ds2 { (#,#) ipv2 ipv3 ->
-                 case NetworkFunctions.$wparseMessage
-                        ipv3 of ww2 { (#,,#) ww3 ww4 ww5 ->
-                 case GHC.Base.eqString
-                        ww4
-                        NetworkFunctions.handleConnection12 of wild {
-                   GHC.Types.False
-                   -> case ww4 of wild1 {
-                        [] -> GHC.IO.Handle.hClose1 ipv1 ipv2
-                        : ds ds3
-                        -> case ds of wild2 { GHC.Types.C# ds4 ->
-                           case ds4 of ds5 {
-                             DEFAULT -> GHC.IO.Handle.hClose1 ipv1 ipv2
-                             'B'#
-                             -> case ds3 of wild3 {
-                                  []
-                                  -> case w of ww6 { DataTypes.Node ww7 ww8 ww9 ww10 ww11 ww12 ww13 ->
-                                     case ww7 of ww14 { GHC.Types.I# ww15 ->
-                                     case w1 of ww16 { DataTypes.MVarLock ww17 ->
-                                     case ww17 of ww18 { GHC.MVar.MVar ww19 ->
-                                     case ww3 of ww20 { GHC.Types.I# ww21 ->
-                                     case NetworkFunctions.$wprocessMessage
-                                            ww15
-                                            ww10
-                                            ww11
-                                            ww19
-                                            wild1
-                                            ww21
-                                            (NetworkFunctions.handleConnection_go ww5)
-                                            ipv2 of ds6 { (#,#) ipv4 ipv5 ->
-                                     GHC.IO.Handle.hClose1 ipv1 ipv4 } } } } } }
-                                  : ipv4 ipv5 -> GHC.IO.Handle.hClose1 ipv1 ipv2 } } } }
-                   GHC.Types.True
-                   -> case w of ww6 { DataTypes.Node ww7 ww8 ww9 ww10 ww11 ww12 ww13 ->
-                      case ww7 of ww14 { GHC.Types.I# ww15 ->
-                      case ww9
-                             `cast`
-                           (GHC.IORef.N:IORef[0] <[DataTypes.Port]>_N) of ww16 { GHC.STRef.STRef ww17 ->
-                      case ww13
-                             `cast`
-                           (GHC.IORef.N:IORef[0] <Data.HashMap.Base.HashMap
-                                                    (DataTypes.Port, DataTypes.Port)
-                                                    GHC.Types.Int>_N) of ww18 { GHC.STRef.STRef ww19 ->
-                      case w1 of ww20 { DataTypes.MVarLock ww21 ->
-                      case ww21 of ww22 { GHC.MVar.MVar ww23 ->
-                      case NetworkFunctions.$wprocessDist
-                             ww15
-                             ww17
-                             ww10
-                             ww11
-                             ww12
-                             ww19
-                             ww23
-                             ww3
-                             ww5
-                             ipv2 of ds3 { (#,#) ipv4 ipv5 ->
-                      GHC.IO.Handle.hClose1 ipv1 ipv4 } } } } } } } } } } }) -}
-be82b9bdac8ef213a9874e804fa81223
+     Strictness: <L,U(U)><S,U><L,1*U(U(U),1*U(U),1*U(U),1*U(U),U(U),U(U),U(U))><L,1*U(1*U(U))><S,U>,
+     Inline: [2] -}
+c6525de39146a65527ad54ebaf1ebb1a
   $wlistenForConnections ::
     Foreign.C.Types.CInt
     -> Network.Socket.Types.Family
@@ -560,9 +494,9 @@ be82b9bdac8ef213a9874e804fa81223
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 8,
-     Strictness: <L,U(U)><S,U><L,U><L,U(U)><S,U><L,U(U(U),A,U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
+     Strictness: <L,U(U)><S,U><L,U><L,U(U)><S,U><L,U(U(U),U(U),U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
      Inline: [2] -}
-e042fbb09e19126c18a92e899f59fa4f
+17467b1132a322b9d59ad0245a4699d8
   $wparseMessage ::
     GHC.Base.String
     -> (# DataTypes.Port, GHC.Base.String, [GHC.Base.String] #)
@@ -575,12 +509,12 @@ e042fbb09e19126c18a92e899f59fa4f
                            @ DataTypes.Port
                            (Text.ParserCombinators.ReadP.run
                               @ DataTypes.Port
-                              NetworkFunctions.handleConnection16
+                              NetworkFunctions.parseMessage3
                               (GHC.List.$w!! @ GHC.Base.String string 0#)) of wild {
-                      [] -> NetworkFunctions.handleConnection15
+                      [] -> NetworkFunctions.parseMessage2
                       : x ds
                       -> case ds of wild1 {
-                           [] -> x : ipv ipv1 -> NetworkFunctions.handleConnection14 } },
+                           [] -> x : ipv ipv1 -> NetworkFunctions.parseMessage1 } },
                     GHC.List.$w!! @ GHC.Base.String string 1#,
                     NetworkFunctions.$wunsafeDrop @ GHC.Base.String 2# string #)) -}
 9117ce220bcb09e875c0d0023237d464
@@ -592,8 +526,36 @@ e042fbb09e19126c18a92e899f59fa4f
     -> (# (# #) | v #)
   {- Arity: 4, HasNoCafRefs, Strictness: <L,U><L,U><L,U><S,1*U>,
      Inline: [2] -}
-34a539a7fab77af3484a58e325df4557
+8df9d21246297549c68d2ad8ab8feac8
   $wpoly_go2 ::
+    GHC.Prim.Word#
+    -> GHC.Prim.Int#
+    -> GHC.Prim.Int#
+    -> Data.HashMap.Base.HashMap DataTypes.Port v
+    -> Data.HashMap.Base.HashMap DataTypes.Port v
+  {- Arity: 4, Strictness: <L,U><L,U><L,U><S,1*U>, Inline: [2] -}
+ac8480071e49b016802b06230e02e00d
+  $wpoly_go3 ::
+    GHC.Prim.Int#
+    -> Data.HashMap.Array.Array#
+         (Data.HashMap.Base.Leaf DataTypes.Port v)
+    -> GHC.Prim.Int#
+    -> GHC.Prim.Int#
+    -> GHC.Maybe.Maybe GHC.Types.Int
+  {- Arity: 4, HasNoCafRefs, Strictness: <L,U><L,U><S,U><S,U>,
+     Inline: [2] -}
+11fad5612d78e4ccffdfc6920a00e3d2
+  $wpoly_go4 ::
+    GHC.Prim.Word#
+    -> GHC.Prim.Int#
+    -> v
+    -> GHC.Prim.Int#
+    -> Data.HashMap.Base.HashMap DataTypes.Port v
+    -> Data.HashMap.Base.HashMap DataTypes.Port v
+  {- Arity: 5, Strictness: <S,U><L,U><L,U><L,U><S,1*U>,
+     Inline: [2] -}
+786bc22459cb8a68c23e19591440e9bf
+  $wpoly_go5 ::
     GHC.Prim.Word#
     -> DataTypes.Port
     -> DataTypes.Port
@@ -603,16 +565,194 @@ e042fbb09e19126c18a92e899f59fa4f
     -> Data.HashMap.Base.HashMap (DataTypes.Port, DataTypes.Port) v
   {- Arity: 6, Strictness: <S,U><L,U(U)><L,U(U)><L,U><L,U><S,1*U>,
      Inline: [2] -}
-3902b06a695ef35ebeaf02b4ecf0f535
-  $wpoly_go3 ::
+0c7360e750b43d9098ebea98794c0a95
+  $wpoly_go6 ::
     GHC.Prim.Word#
     -> GHC.Prim.Int#
     -> v
     -> GHC.Prim.Int#
     -> Data.HashMap.Base.HashMap DataTypes.Port v
-    -> Data.HashMap.Base.HashMap DataTypes.Port v
-  {- Arity: 5, Strictness: <S,U><L,U><L,U><L,U><S,1*U>,
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          Data.HashMap.Base.HashMap DataTypes.Port v #)
+  {- Arity: 6, Strictness: <L,U><L,U><L,U><L,U><S,1*U><L,U>,
      Inline: [2] -}
+6fd4ab93ae989a5960b43d9d6eb9cc6e
+  $wprocessDisconnect ::
+    DataTypes.Port
+    -> GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port]
+    -> GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port]
+    -> GHC.Prim.MutVar#
+         GHC.Prim.RealWorld
+         (Data.HashMap.Base.HashMap
+            DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+    -> GHC.IORef.IORef
+         (Data.HashMap.Base.HashMap DataTypes.Port DataTypes.Path)
+    -> GHC.IORef.IORef
+         (Data.HashMap.Base.HashMap DataTypes.Port GHC.Types.Int)
+    -> GHC.IORef.IORef
+         (Data.HashMap.Base.HashMap
+            (DataTypes.Port, DataTypes.Port) GHC.Types.Int)
+    -> GHC.Prim.MVar# GHC.Prim.RealWorld ()
+    -> DataTypes.Port
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 10,
+     Strictness: <L,U(U)><S,U><S,U><S,U><L,U(U)><L,U(U)><L,U(U)><S,U><L,U(U)><S,U>,
+     Inline: [2],
+     Unfolding: (\ (ww :: DataTypes.Port)
+                   (ww1 :: GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port])
+                   (ww2 :: GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port])
+                   (ww3 :: GHC.Prim.MutVar#
+                             GHC.Prim.RealWorld
+                             (Data.HashMap.Base.HashMap
+                                DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle)))
+                   (ww4 :: GHC.IORef.IORef
+                             (Data.HashMap.Base.HashMap DataTypes.Port DataTypes.Path))
+                   (ww5 :: GHC.IORef.IORef
+                             (Data.HashMap.Base.HashMap DataTypes.Port GHC.Types.Int))
+                   (ww6 :: GHC.IORef.IORef
+                             (Data.HashMap.Base.HashMap
+                                (DataTypes.Port, DataTypes.Port) GHC.Types.Int))
+                   (ww7 :: GHC.Prim.MVar# GHC.Prim.RealWorld ())
+                   (w :: DataTypes.Port)
+                   (w1 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                 let {
+                   $w$j :: GHC.Prim.State# GHC.Prim.RealWorld
+                           -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                     <join 1> {- Arity: 1, Strictness: <S,U>, Inline: [2] -}
+                   = \ (w2 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                     case GHC.Prim.readMutVar#
+                            @ GHC.Prim.RealWorld
+                            @ [DataTypes.Port]
+                            ww1
+                            w2 of ds1 { (#,#) ipv ipv1 ->
+                     case GHC.Prim.writeMutVar#
+                            @ GHC.Prim.RealWorld
+                            @ [DataTypes.Port]
+                            ww1
+                            (Data.OldList.deleteBy @ DataTypes.Port GHC.Classes.eqInt w ipv1)
+                            ipv of s2# { DEFAULT ->
+                     case GHC.Prim.readMutVar#
+                            @ GHC.Prim.RealWorld
+                            @ (Data.HashMap.Base.HashMap
+                                 DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+                            ww3
+                            s2# of ds2 { (#,#) ipv2 ipv3 ->
+                     case GHC.Prim.writeMutVar#
+                            @ GHC.Prim.RealWorld
+                            @ (Data.HashMap.Base.HashMap
+                                 DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+                            ww3
+                            (case w of wild { GHC.Types.I# x# ->
+                             NetworkFunctions.$wpoly_go2
+                               @ (GHC.Types.IO GHC.IO.Handle.Types.Handle)
+                               (GHC.Prim.int2Word# x#)
+                               x#
+                               0#
+                               ipv3 })
+                            ipv2 of s2#1 { DEFAULT ->
+                     case GHC.Prim.readMutVar#
+                            @ GHC.Prim.RealWorld
+                            @ [DataTypes.Port]
+                            ww2
+                            s2#1 of ds3 { (#,#) ipv4 ipv5 ->
+                     let {
+                       ds4 :: GHC.STRef.STRef
+                                GHC.Prim.RealWorld
+                                (Data.HashMap.Base.HashMap
+                                   DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+                       = GHC.STRef.STRef
+                           @ GHC.Prim.RealWorld
+                           @ (Data.HashMap.Base.HashMap
+                                DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+                           ww3
+                     } in
+                     let {
+                       ds5 :: GHC.STRef.STRef GHC.Prim.RealWorld [DataTypes.Port]
+                       = GHC.STRef.STRef @ GHC.Prim.RealWorld @ [DataTypes.Port] ww2
+                     } in
+                     let {
+                       exit :: GHC.Prim.State# GHC.Prim.RealWorld
+                               -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                         <join 1> {- Arity: 1, Strictness: <S,U> -}
+                       = \ (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                         DataTypes.$winterlocked ww7 NetworkFunctions.processDisconnect6 eta
+                     } in
+                     letrec {
+                       go1 :: [DataTypes.Port]
+                              -> GHC.Prim.State# GHC.Prim.RealWorld
+                              -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                         <join 2> {- Arity: 2, Strictness: <S,1*U><S,U> -}
+                       = \ (ds :: [DataTypes.Port])
+                           (eta :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                         case ds of wild {
+                           [] -> exit eta
+                           : y ys
+                           -> case ww6
+                                     `cast`
+                                   (GHC.IORef.N:IORef[0] <Data.HashMap.Base.HashMap
+                                                            (DataTypes.Port, DataTypes.Port)
+                                                            GHC.Types.Int>_N) of wild1 { GHC.STRef.STRef var# ->
+                              case GHC.Prim.readMutVar#
+                                     @ GHC.Prim.RealWorld
+                                     @ (Data.HashMap.Base.HashMap
+                                          (DataTypes.Port, DataTypes.Port) GHC.Types.Int)
+                                     var#
+                                     eta of ds6 { (#,#) ipv6 ipv7 ->
+                              case GHC.Prim.writeMutVar#
+                                     @ GHC.Prim.RealWorld
+                                     @ (Data.HashMap.Base.HashMap
+                                          (DataTypes.Port, DataTypes.Port) GHC.Types.Int)
+                                     var#
+                                     (NetworkFunctions.filterHashMap w ipv7)
+                                     ipv6 of s2#2 { DEFAULT ->
+                              case ww of ww8 { GHC.Types.I# ww9 ->
+                              case y of ww10 { GHC.Types.I# ww11 ->
+                              case NetworkFunctions.$wrecompute
+                                     ww9
+                                     ds5 `cast` (Sym (GHC.IORef.N:IORef[0]) <[DataTypes.Port]>_N)
+                                     ds4
+                                       `cast`
+                                     (Sym (GHC.IORef.N:IORef[0]) <Data.HashMap.Base.HashMap
+                                                                    DataTypes.Port
+                                                                    (GHC.Types.IO
+                                                                       GHC.IO.Handle.Types.Handle)>_N)
+                                     ww4
+                                     ww5
+                                     wild1
+                                       `cast`
+                                     (Sym (GHC.IORef.N:IORef[0]) <Data.HashMap.Base.HashMap
+                                                                    (DataTypes.Port, DataTypes.Port)
+                                                                    GHC.Types.Int>_N)
+                                     ww11
+                                     s2#2 of ds7 { (#,#) ipv8 ipv9 ->
+                              go1 ys ipv8 } } } } } } }
+                     } in
+                     go1 ipv5 ipv4 } } } } }
+                 } in
+                 case NetworkFunctions.processDisconnect5 of wild {
+                   GHC.Types.False
+                   -> case NetworkFunctions.processDisconnect2 of wild1 {
+                        GHC.Types.False
+                        -> case DataTypes.interlocked2
+                           ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+                           of {}
+                        GHC.Types.True
+                        -> case GHC.Prim.takeMVar#
+                                  @ GHC.Prim.RealWorld
+                                  @ ()
+                                  ww7
+                                  w1 of ds1 { (#,#) ipv ipv1 ->
+                           $w$j ipv } }
+                   GHC.Types.True
+                   -> case GHC.Prim.putMVar#
+                             @ GHC.Prim.RealWorld
+                             @ ()
+                             ww7
+                             GHC.Tuple.()
+                             w1 of s2# { DEFAULT ->
+                      $w$j s2# } }) -}
 ce8b744c3af208bce9775e2ce9ea293d
   $wprocessDist ::
     GHC.Prim.Int#
@@ -636,7 +776,7 @@ ce8b744c3af208bce9775e2ce9ea293d
   {- Arity: 10,
      Strictness: <S,U><S,U><L,1*U(U)><L,U(U)><L,U(U)><S,U><S,U><L,1*U(U)><S,1*U><S,U>,
      Inline: [2] -}
-d98c9d6cfee1f74622e120b6d2a1fe94
+93397238405424c6a92e3e93c570568c
   $wprocessMessage ::
     GHC.Prim.Int#
     -> GHC.IORef.IORef
@@ -702,19 +842,19 @@ d98c9d6cfee1f74622e120b6d2a1fe94
                             (#_|#) ds3
                             -> case (GHC.IO.Handle.Text.hPutStr'
                                        GHC.IO.Handle.FD.stdout
-                                       NetworkFunctions.handleConnection10
+                                       NetworkFunctions.processMessage4
                                        GHC.Types.True)
                                       `cast`
                                     (GHC.Types.N:IO[0] <()>_R)
                                       ipv2 of ds4 { (#,#) ipv4 ipv5 ->
                                DataTypes.$winterlocked
                                  ww3
-                                 NetworkFunctions.handleConnection8
+                                 NetworkFunctions.processDisconnect6
                                  ipv4 }
                             (#|_#) a1
                             -> case a1 of wild2 {
                                  DEFAULT
-                                 -> case NetworkFunctions.handleConnection7
+                                 -> case NetworkFunctions.processMessage3
                                     ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
                                     of {}
                                  DataTypes.Portnumber neigh
@@ -743,12 +883,12 @@ d98c9d6cfee1f74622e120b6d2a1fe94
                                                   GHC.Base.++_$s++
                                                     @ GHC.Types.Char
                                                     (GHC.CString.unpackAppendCString#
-                                                       NetworkFunctions.handleConnection6
+                                                       NetworkFunctions.processMessage2
                                                        (GHC.Base.++
                                                           @ GHC.Types.Char
                                                           w
                                                           (GHC.CString.unpackAppendCString#
-                                                             NetworkFunctions.handleConnection6
+                                                             NetworkFunctions.processMessage2
                                                              w1)))
                                                     ww6
                                                     ww7 })
@@ -758,7 +898,7 @@ d98c9d6cfee1f74622e120b6d2a1fe94
                                                 ipv4 of ds5 { (#,#) ipv6 ipv7 ->
                                          DataTypes.$winterlocked
                                            ww3
-                                           NetworkFunctions.handleConnection8
+                                           NetworkFunctions.processDisconnect6
                                            ipv6 } } } } } } } } } }
                        1#
                        -> case (GHC.IO.Handle.Text.hPutStr'
@@ -770,12 +910,12 @@ d98c9d6cfee1f74622e120b6d2a1fe94
                                  w3 of ds1 { (#,#) ipv ipv1 ->
                           DataTypes.$winterlocked
                             ww3
-                            NetworkFunctions.handleConnection8
+                            NetworkFunctions.processDisconnect6
                             ipv } }
                  } in
-                 case NetworkFunctions.handleConnection5 of wild {
+                 case NetworkFunctions.processDisconnect5 of wild {
                    GHC.Types.False
-                   -> case NetworkFunctions.handleConnection2 of wild1 {
+                   -> case NetworkFunctions.processDisconnect2 of wild1 {
                         GHC.Types.False
                         -> case DataTypes.interlocked2
                            ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
@@ -795,7 +935,28 @@ d98c9d6cfee1f74622e120b6d2a1fe94
                              GHC.Tuple.()
                              w2 of s2# { DEFAULT ->
                       $w$j s2# } }) -}
-3895e588cfa9a759efe819b6bd1ea8ce
+c4b03ead1cafc0fdee6c8c5675d25168
+  $wprocessRepair ::
+    DataTypes.Port
+    -> GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port]
+    -> GHC.Prim.MutVar# GHC.Prim.RealWorld [DataTypes.Port]
+    -> GHC.Prim.MutVar#
+         GHC.Prim.RealWorld
+         (Data.HashMap.Base.HashMap
+            DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle))
+    -> GHC.IORef.IORef
+         (Data.HashMap.Base.HashMap DataTypes.Port GHC.Types.Int)
+    -> GHC.IORef.IORef
+         (Data.HashMap.Base.HashMap
+            (DataTypes.Port, DataTypes.Port) GHC.Types.Int)
+    -> GHC.Prim.MVar# GHC.Prim.RealWorld ()
+    -> DataTypes.Port
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 9,
+     Strictness: <L,U(U)><S,U><S,U><S,U><L,U(U)><L,U(U)><S,U><L,U(U)><S,U>,
+     Inline: [2] -}
+5326fbec3ac60999eae4f9b56f73cf3f
   $wrecompute ::
     GHC.Prim.Int#
     -> GHC.IORef.IORef [DataTypes.Port]
@@ -809,18 +970,17 @@ d98c9d6cfee1f74622e120b6d2a1fe94
     -> GHC.IORef.IORef
          (Data.HashMap.Base.HashMap
             (DataTypes.Port, DataTypes.Port) GHC.Types.Int)
-    -> DataTypes.Lock
     -> GHC.Prim.Int#
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 9,
-     Strictness: <S,U><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(1*U(U))><S,U><S,U>,
+  {- Arity: 8,
+     Strictness: <S,U><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(U)><L,1*U(U)><S,U><S,U>,
      Inline: [2] -}
 b6263a63759a1fde12732a6dc73d6712
   $wunsafeDrop :: GHC.Prim.Int# -> [a1] -> [a1]
   {- Arity: 2, HasNoCafRefs, Strictness: <L,1*U><S,1*U>,
      Inline: [2] -}
-ee315b646fb1e1ea7c9d3685f623b27c
+db68e95c5e8b94abe4b45db7cf55a579
   connectSocket ::
     GHC.Types.Int -> GHC.Types.IO Network.Socket.Types.Socket
   {- Arity: 2, Strictness: <L,1*U(U)><S,U>,
@@ -829,7 +989,7 @@ ee315b646fb1e1ea7c9d3685f623b27c
                   `cast`
                 (<GHC.Types.Int>_R
                  ->_R Sym (GHC.Types.N:IO[0] <Network.Socket.Types.Socket>_R)) -}
-40bcbc6fe9539cd633a93e7ec5480584
+400216b9309bf9a4c86fdff4d19144e1
   connectSocket1 ::
     GHC.Types.Int
     -> GHC.Prim.State# GHC.Prim.RealWorld
@@ -839,16 +999,16 @@ ee315b646fb1e1ea7c9d3685f623b27c
      Unfolding: (\ (portNumber :: GHC.Types.Int)
                    (eta :: GHC.Prim.State# GHC.Prim.RealWorld) ->
                  let {
-                   lvl35 :: Network.Socket.Types.PortNumber
+                   lvl45 :: Network.Socket.Types.PortNumber
                    = case portNumber of wild { GHC.Types.I# i ->
                      (GHC.Word.W16# (GHC.Prim.narrow16Word# (GHC.Prim.int2Word# i)))
                        `cast`
                      (Sym (Network.Socket.Types.N:PortNumber[0])) }
                  } in
                  let {
-                   lvl36 :: Network.Socket.Types.SockAddr
+                   lvl46 :: Network.Socket.Types.SockAddr
                    = Network.Socket.Types.SockAddrInet
-                       lvl35
+                       lvl45
                        NetworkFunctions.connectSocket4
                  } in
                  letrec {
@@ -871,7 +1031,7 @@ ee315b646fb1e1ea7c9d3685f623b27c
                              case Network.Socket.$wconnect
                                     ww1
                                     ww7
-                                    lvl36
+                                    lvl46
                                     s1 of ds2 { (#,#) ipv2 ipv3 ->
                              (# ipv2,
                                 Data.Either.Right
@@ -948,6 +1108,43 @@ a94a26273ff856ae62122486253d771e
                         2130706433##
                         GHC.Prim.realWorld# of wild { (#,#) ds ds1 ->
                  GHC.Word.W32# (GHC.Prim.narrow32Word# ds1) }) -}
+d3fa492b7714cd13dbf934d740fb94f0
+  connectTo ::
+    DataTypes.Port -> GHC.Types.IO GHC.IO.Handle.Types.Handle
+  {- Arity: 2, Strictness: <L,1*U(U)><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                NetworkFunctions.connectTo1
+                  `cast`
+                (<DataTypes.Port>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <GHC.IO.Handle.Types.Handle>_R)) -}
+053aa17ad612536da7b972519d897e95
+  connectTo1 ::
+    DataTypes.Port
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          GHC.IO.Handle.Types.Handle #)
+  {- Arity: 2, Strictness: <L,1*U(U)><S,U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (neighbour :: DataTypes.Port)
+                   (s :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                 case NetworkFunctions.connectSocket1
+                        neighbour
+                        s of ds1 { (#,#) ipv ipv1 ->
+                 case ipv1 of ww { Network.Socket.Types.MkSocket ww1 ww2 ww3 ww4 ww5 ->
+                 case ww5 of ww6 { GHC.MVar.MVar ww7 ->
+                 Network.Socket.$wsocketToHandle
+                   ww1
+                   ww7
+                   GHC.IO.IOMode.ReadWriteMode
+                   ipv } } }) -}
+5c5e4c95ca0ec70bd5b16b4eba3e22d2
+  filterHashMap ::
+    DataTypes.Port
+    -> Data.HashMap.Base.HashMap
+         (DataTypes.Port, DataTypes.Port) GHC.Types.Int
+    -> Data.HashMap.Base.HashMap
+         (DataTypes.Port, DataTypes.Port) GHC.Types.Int
+  {- Arity: 2, Strictness: <L,U(U)><S,1*U> -}
 51f15dc376cb231a20eb117478e4d76d
   getMinEstDistNeigh ::
     DataTypes.Port
@@ -987,12 +1184,12 @@ d5fe2f7b3e9fb7e8307b06c5a74bf4b4
                                                (DataTypes.Port, DataTypes.Port)
                                                GHC.Types.Int>_N) of ww { GHC.STRef.STRef ww1 ->
                  NetworkFunctions.$wgetMinEstDistNeigh w ww1 w2 }) -}
-85d348b60a659e9bf0d24c5f3c3e3a40
+1f9e6b94b36b605ef8905bfdcf6391d8
   handleConnection ::
     Network.Socket.Types.Socket
     -> DataTypes.Node -> DataTypes.Lock -> GHC.Types.IO ()
   {- Arity: 4,
-     Strictness: <S(LLLLS(S)),1*U(U(U),A,A,A,1*U(U))><L,1*U(1*U(U),A,1*U(U),1*U(U),U(U),U(U),1*U(U))><L,1*U(1*U(U))><S,U>,
+     Strictness: <S(LLLLS(S)),1*U(U(U),A,A,A,1*U(U))><L,1*U(U(U),1*U(U),1*U(U),1*U(U),U(U),U(U),U(U))><L,1*U(1*U(U))><S,U>,
      Unfolding: InlineRule (0, True, True)
                 NetworkFunctions.handleConnection1
                   `cast`
@@ -1000,7 +1197,7 @@ d5fe2f7b3e9fb7e8307b06c5a74bf4b4
                  ->_R <DataTypes.Node>_R
                  ->_R <DataTypes.Lock>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-5a4600cdd453eac790850a2dcd83e46e
+0df912c32110b0adf21a9fc1c4242144
   handleConnection1 ::
     Network.Socket.Types.Socket
     -> DataTypes.Node
@@ -1008,7 +1205,7 @@ d5fe2f7b3e9fb7e8307b06c5a74bf4b4
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 4,
-     Strictness: <S(LLLLS(S)),1*U(U(U),A,A,A,1*U(U))><L,1*U(1*U(U),A,1*U(U),1*U(U),U(U),U(U),1*U(U))><L,1*U(1*U(U))><S,U>,
+     Strictness: <S(LLLLS(S)),1*U(U(U),A,A,A,1*U(U))><L,1*U(U(U),1*U(U),1*U(U),1*U(U),U(U),U(U),U(U))><L,1*U(1*U(U))><S,U>,
      Inline: [2],
      Unfolding: InlineRule (4, True, False)
                 (\ (w :: Network.Socket.Types.Socket)
@@ -1018,72 +1215,12 @@ d5fe2f7b3e9fb7e8307b06c5a74bf4b4
                  case w of ww { Network.Socket.Types.MkSocket ww1 ww2 ww3 ww4 ww5 ->
                  case ww5 of ww6 { GHC.MVar.MVar ww7 ->
                  NetworkFunctions.$whandleConnection ww1 ww7 w1 w2 w3 } }) -}
-3c8b411477f16196dbb0c6a282c30949
-  handleConnection10 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   NetworkFunctions.handleConnection11) -}
-818c3f202c2993e856d5f2f60e2acc0c
-  handleConnection11 :: GHC.Prim.Addr#
-  {- HasNoCafRefs, Unfolding: ("Port number is not known"#) -}
-cec534ad735954abb1fe29012f4abb46
-  handleConnection12 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   NetworkFunctions.handleConnection13) -}
-d9917b6fdfc7cec67d18367367d85752
-  handleConnection13 :: GHC.Prim.Addr#
-  {- HasNoCafRefs, Unfolding: ("mydist"#) -}
-ac77064c11416375f540092824bf5c31
-  handleConnection14 :: GHC.Types.Int
-  {- Strictness: x -}
-4a73b7a06bb70ffe508c67ed5ddb6f55
-  handleConnection15 :: GHC.Types.Int
-  {- Strictness: x -}
-35235bd800eb3f4bad49086d1fba3bdc
-  handleConnection16 :: Text.ParserCombinators.ReadP.P GHC.Types.Int
-  {- Unfolding: (GHC.Read.$fReadInt_$sreadNumber
-                   GHC.Read.$fReadInt2
-                   Text.ParserCombinators.ReadPrec.minPrec
-                   @ GHC.Types.Int
-                   (Text.Read.readEither7 @ GHC.Types.Int)) -}
-4a1121f3d74c61158f78133d603499aa
-  handleConnection2 :: GHC.Types.Bool
-  {- Unfolding: (GHC.Base.eqString
-                   NetworkFunctions.handleConnection3
-                   DataTypes.interlocked3) -}
-fba5ebfab8c9acbc8c6af6d9459fb513
-  handleConnection3 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   NetworkFunctions.handleConnection4) -}
-33ca4150911c6dd418984e5f50806460
-  handleConnection4 :: GHC.Prim.Addr#
-  {- HasNoCafRefs, Unfolding: ("Lock"#) -}
-e0061c58cf2a97b2be630375d94aae3a
-  handleConnection5 :: GHC.Types.Bool
-  {- Unfolding: (GHC.Base.eqString
-                   NetworkFunctions.handleConnection3
-                   DataTypes.interlocked5) -}
-7f720ca5f24f5cbd253dc54ed397c555
-  handleConnection6 :: GHC.Prim.Addr#
-  {- HasNoCafRefs, Unfolding: (" "#) -}
-f97b8b778d3f63761a21bbd1b8aafb11
-  handleConnection7 :: (DataTypes.Port)
-  {- Strictness: x -}
-62e6a750e187fba028e88607b86b1e35
-  handleConnection8 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   NetworkFunctions.handleConnection9) -}
-f1d0c836533167a48282afb10f952aa5
-  handleConnection9 :: GHC.Prim.Addr#
-  {- HasNoCafRefs, Unfolding: ("Unlock"#) -}
-f80a91d1a55fa7794e25c3ac08d461da
-  handleConnection_go :: [[GHC.Types.Char]] -> [GHC.Types.Char]
-  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
-af07a1daa1efff23589317a095662f1d
+0f8b699c7d492e631a9b2344c1de2b7f
   listenForConnections ::
     Network.Socket.Types.Socket
     -> DataTypes.Node -> DataTypes.Lock -> GHC.Types.IO ()
   {- Arity: 4,
-     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),1*U(U))><L,U(U(U),A,U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
+     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),1*U(U))><L,U(U(U),U(U),U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
      Unfolding: InlineRule (0, True, True)
                 NetworkFunctions.listenForConnections1
                   `cast`
@@ -1091,7 +1228,7 @@ af07a1daa1efff23589317a095662f1d
                  ->_R <DataTypes.Node>_R
                  ->_R <DataTypes.Lock>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-582a25c68810ce4759651146a47bad60
+31a50c5095dc3f25a7db5165a8e44ef4
   listenForConnections1 ::
     Network.Socket.Types.Socket
     -> DataTypes.Node
@@ -1099,7 +1236,7 @@ af07a1daa1efff23589317a095662f1d
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
   {- Arity: 4,
-     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),1*U(U))><L,U(U(U),A,U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
+     Strictness: <S(LSLLS(S)),1*U(U(U),U,U,U(U),1*U(U))><L,U(U(U),U(U),U(U),U(U),U(U),U(U),U(U))><L,U(U(U))><S,U>,
      Inline: [2],
      Unfolding: InlineRule (4, True, False)
                 (\ (w :: Network.Socket.Types.Socket)
@@ -1117,7 +1254,49 @@ af07a1daa1efff23589317a095662f1d
                    w1
                    w2
                    w3 } }) -}
-f7957b503113d58b82e646850ae23a2d
+7e729d17a42f990c4ea94d00a988a200
+  makeConnection ::
+    [DataTypes.Port]
+    -> Data.HashMap.Base.HashMap
+         DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: (\ (neighbours :: [DataTypes.Port]) ->
+                 NetworkFunctions.makeConnection_go2
+                   neighbours
+                   (GHC.Base.map
+                      @ GHC.Types.Int
+                      @ (GHC.Types.IO GHC.IO.Handle.Types.Handle)
+                      NetworkFunctions.connectTo1
+                        `cast`
+                      (<DataTypes.Port>_R
+                       ->_R Sym (GHC.Types.N:IO[0] <GHC.IO.Handle.Types.Handle>_R))
+                      neighbours)
+                   (Data.HashMap.Base.Empty
+                      @ DataTypes.Port
+                      @ (GHC.Types.IO GHC.IO.Handle.Types.Handle))) -}
+ccfe9c96a7cda14191668b3606d4baaf
+  makeConnection_go2 ::
+    [GHC.Types.Int]
+    -> [GHC.Types.IO GHC.IO.Handle.Types.Handle]
+    -> Data.HashMap.Base.HashMap
+         DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle)
+    -> Data.HashMap.Base.HashMap
+         DataTypes.Port (GHC.Types.IO GHC.IO.Handle.Types.Handle)
+  {- Arity: 3, Strictness: <S,1*U><L,1*U><S,1*U> -}
+59656238358d1ed1d2185fe7d6d2ac81
+  makeEstDist ::
+    [DataTypes.Port]
+    -> GHC.Types.Int
+    -> Data.HashMap.Base.HashMap DataTypes.Port GHC.Types.Int
+    -> Data.HashMap.Base.HashMap DataTypes.Port GHC.Types.Int
+  {- Arity: 3, Strictness: <S,1*U><L,U><S,1*U> -}
+0ffb9d5c77e8a23a147fdde419ae6bbc
+  makeRoutingTable ::
+    [DataTypes.Port]
+    -> Data.HashMap.Base.HashMap DataTypes.Port DataTypes.Path
+    -> Data.HashMap.Base.HashMap DataTypes.Port DataTypes.Path
+  {- Arity: 2, Strictness: <S,1*U><S,1*U> -}
+586a8f4d1318774e521ad82b073ceba4
   parseMessage ::
     GHC.Base.String
     -> (DataTypes.Port, GHC.Base.String, [GHC.Base.String])
@@ -1127,6 +1306,19 @@ f7957b503113d58b82e646850ae23a2d
                  case NetworkFunctions.$wparseMessage
                         w of ww { (#,,#) ww1 ww2 ww3 ->
                  (ww1, ww2, ww3) }) -}
+4cb8c008e3e044acb97f35da17def758
+  parseMessage1 :: GHC.Types.Int
+  {- Strictness: x -}
+75efd7ce734bf256bbd41fc3b85ff2fd
+  parseMessage2 :: GHC.Types.Int
+  {- Strictness: x -}
+4baf149acd5733276539ed868c672469
+  parseMessage3 :: Text.ParserCombinators.ReadP.P GHC.Types.Int
+  {- Unfolding: (GHC.Read.$fReadInt_$sreadNumber
+                   GHC.Read.$fReadInt2
+                   Text.ParserCombinators.ReadPrec.minPrec
+                   @ GHC.Types.Int
+                   (Text.Read.readEither7 @ GHC.Types.Int)) -}
 81d94d68caf0fa3c97978458d6696fae
   portToAddress :: GHC.Types.Int -> Network.Socket.Types.SockAddr
   {- Arity: 1, Strictness: <L,1*U(U)>m1,
@@ -1138,7 +1330,85 @@ f7957b503113d58b82e646850ae23a2d
                       `cast`
                     (Sym (Network.Socket.Types.N:PortNumber[0])) })
                    NetworkFunctions.connectSocket4) -}
-d6f8e409977fdd23d627c0f1925795b2
+83a31ab119f729ba07e6e358c9fa0709
+  processDisconnect ::
+    DataTypes.Node
+    -> DataTypes.Lock -> DataTypes.Port -> GHC.Types.IO ()
+  {- Arity: 4,
+     Strictness: <S(LS(S)S(S)S(S)LLL),1*U(U(U),1*U(U),1*U(U),1*U(U),U(U),U(U),U(U))><S(S(S)),1*U(1*U(U))><L,U(U)><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                NetworkFunctions.processDisconnect1
+                  `cast`
+                (<DataTypes.Node>_R
+                 ->_R <DataTypes.Lock>_R
+                 ->_R <DataTypes.Port>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+e58b3d38c0d05dcae295abf12b2f6290
+  processDisconnect1 ::
+    DataTypes.Node
+    -> DataTypes.Lock
+    -> DataTypes.Port
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 4,
+     Strictness: <S(LS(S)S(S)S(S)LLL),1*U(U(U),1*U(U),1*U(U),1*U(U),U(U),U(U),U(U))><S(S(S)),1*U(1*U(U))><L,U(U)><S,U>,
+     Inline: [2],
+     Unfolding: InlineRule (4, True, False)
+                (\ (w :: DataTypes.Node)
+                   (w1 :: DataTypes.Lock)
+                   (w2 :: DataTypes.Port)
+                   (w3 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                 case w of ww { DataTypes.Node ww1 ww2 ww3 ww4 ww5 ww6 ww7 ->
+                 case ww2
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <[DataTypes.Port]>_N) of ww8 { GHC.STRef.STRef ww9 ->
+                 case ww3
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <[DataTypes.Port]>_N) of ww10 { GHC.STRef.STRef ww11 ->
+                 case ww4
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <Data.HashMap.Base.HashMap
+                                               DataTypes.Port
+                                               (GHC.Types.IO
+                                                  GHC.IO.Handle.Types.Handle)>_N) of ww12 { GHC.STRef.STRef ww13 ->
+                 case w1 of ww14 { DataTypes.MVarLock ww15 ->
+                 case ww15 of ww16 { GHC.MVar.MVar ww17 ->
+                 NetworkFunctions.$wprocessDisconnect
+                   ww1
+                   ww9
+                   ww11
+                   ww13
+                   ww5
+                   ww6
+                   ww7
+                   ww17
+                   w2
+                   w3 } } } } } }) -}
+3f7e0f718c8b071066a007aea1507d17
+  processDisconnect2 :: GHC.Types.Bool
+  {- Unfolding: (GHC.Base.eqString
+                   NetworkFunctions.processDisconnect3
+                   DataTypes.interlocked3) -}
+f43208c4ed5d2f69b638eba925cb0dc8
+  processDisconnect3 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   NetworkFunctions.processDisconnect4) -}
+c5e67dc19e80be430c4ad997088002df
+  processDisconnect4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Lock"#) -}
+f7fb7cdafa09e327aa02f97b62323dac
+  processDisconnect5 :: GHC.Types.Bool
+  {- Unfolding: (GHC.Base.eqString
+                   NetworkFunctions.processDisconnect3
+                   DataTypes.interlocked5) -}
+b7cd22d76fd7f243bf54e13c686f6849
+  processDisconnect6 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   NetworkFunctions.processDisconnect7) -}
+4164d2782d3c6081390aa893d7d78fea
+  processDisconnect7 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Unlock"#) -}
+15df2b0f31e94a16c64bdf5cc21ce24c
   processDist ::
     DataTypes.Node
     -> DataTypes.Lock
@@ -1155,7 +1425,7 @@ d6f8e409977fdd23d627c0f1925795b2
                  ->_R <DataTypes.Port>_R
                  ->_R <[GHC.Base.String]>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-feecf898a336d5e4b0855ecdae063941
+138e72d83e5d6cb510f4d88a88656822
   processDist1 ::
     DataTypes.Node
     -> DataTypes.Lock
@@ -1195,7 +1465,7 @@ feecf898a336d5e4b0855ecdae063941
                    w2
                    w3
                    w4 } } } } } }) -}
-39a556ba90d6de358bce041601247bb1
+af91cab154c77768418e3d8a91219ccf
   processMessage ::
     DataTypes.Node
     -> DataTypes.Lock
@@ -1214,7 +1484,7 @@ feecf898a336d5e4b0855ecdae063941
                  ->_R <DataTypes.Port>_R
                  ->_R <GHC.Base.String>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-b41ed9ee2f6341902dc6474bcc321bcf
+f2e51d06bfcb6e3391053972a7e4ce95
   processMessage1 ::
     DataTypes.Node
     -> DataTypes.Lock
@@ -1247,7 +1517,73 @@ b41ed9ee2f6341902dc6474bcc321bcf
                    ww15
                    w4
                    w5 } } } } }) -}
-119220c5d9b7db4fbb33c6ff07fc5f1d
+e9cc5dcb74229b22f2beae261fd6d993
+  processMessage2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: (" "#) -}
+cdd6b97e534f2403d9f19b51902bcf4d
+  processMessage3 :: (DataTypes.Port)
+  {- Strictness: x -}
+46d4d1859a0e996aa572d0e6f693f4b6
+  processMessage4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   NetworkFunctions.processMessage5) -}
+f75bb7f7b551b01294e0306d019ce57f
+  processMessage5 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Port number is not known"#) -}
+7edae9035322cc9ad2d4d8c73687fc64
+  processRepair ::
+    DataTypes.Node
+    -> DataTypes.Lock -> DataTypes.Port -> GHC.Types.IO ()
+  {- Arity: 4,
+     Strictness: <S(LS(S)S(S)S(S)LLL),1*U(U(U),1*U(U),1*U(U),1*U(U),A,U(U),U(U))><S(S(S)),1*U(1*U(U))><L,U(U)><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                NetworkFunctions.processRepair1
+                  `cast`
+                (<DataTypes.Node>_R
+                 ->_R <DataTypes.Lock>_R
+                 ->_R <DataTypes.Port>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+129410e5806614afa3031d7e2ebde6c4
+  processRepair1 ::
+    DataTypes.Node
+    -> DataTypes.Lock
+    -> DataTypes.Port
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 4,
+     Strictness: <S(LS(S)S(S)S(S)LLL),1*U(U(U),1*U(U),1*U(U),1*U(U),A,U(U),U(U))><S(S(S)),1*U(1*U(U))><L,U(U)><S,U>,
+     Inline: [2],
+     Unfolding: InlineRule (4, True, False)
+                (\ (w :: DataTypes.Node)
+                   (w1 :: DataTypes.Lock)
+                   (w2 :: DataTypes.Port)
+                   (w3 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                 case w of ww { DataTypes.Node ww1 ww2 ww3 ww4 ww5 ww6 ww7 ->
+                 case ww2
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <[DataTypes.Port]>_N) of ww8 { GHC.STRef.STRef ww9 ->
+                 case ww3
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <[DataTypes.Port]>_N) of ww10 { GHC.STRef.STRef ww11 ->
+                 case ww4
+                        `cast`
+                      (GHC.IORef.N:IORef[0] <Data.HashMap.Base.HashMap
+                                               DataTypes.Port
+                                               (GHC.Types.IO
+                                                  GHC.IO.Handle.Types.Handle)>_N) of ww12 { GHC.STRef.STRef ww13 ->
+                 case w1 of ww14 { DataTypes.MVarLock ww15 ->
+                 case ww15 of ww16 { GHC.MVar.MVar ww17 ->
+                 NetworkFunctions.$wprocessRepair
+                   ww1
+                   ww9
+                   ww11
+                   ww13
+                   ww6
+                   ww7
+                   ww17
+                   w2
+                   w3 } } } } } }) -}
+b2c7cfb53a69ff26a5f453b66926f15c
   readCommandLineArguments ::
     GHC.Types.IO (GHC.Types.Int, [GHC.Types.Int])
   {- Arity: 1, Strictness: <S,U>,
@@ -1255,7 +1591,7 @@ b41ed9ee2f6341902dc6474bcc321bcf
                 NetworkFunctions.readCommandLineArguments1
                   `cast`
                 (Sym (GHC.Types.N:IO[0] <(GHC.Types.Int, [GHC.Types.Int])>_R)) -}
-680f2ba1f04813eb7d2f6a06ab8fb4b3
+8e3ab32ee22e9cfb5f1dbf932e33b959
   readCommandLineArguments1 ::
     GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld,
@@ -1286,18 +1622,18 @@ b41ed9ee2f6341902dc6474bcc321bcf
                                  @ GHC.Types.Int
                                  (Text.ParserCombinators.ReadP.run
                                     @ GHC.Types.Int
-                                    NetworkFunctions.handleConnection16
+                                    NetworkFunctions.parseMessage3
                                     me) of wild1 {
-                            [] -> NetworkFunctions.handleConnection15
+                            [] -> NetworkFunctions.parseMessage2
                             : x ds
                             -> case ds of wild2 {
-                                 [] -> x : ipv2 ipv3 -> NetworkFunctions.handleConnection14 } },
+                                 [] -> x : ipv2 ipv3 -> NetworkFunctions.parseMessage1 } },
                           GHC.Base.map
                             @ [GHC.Types.Char]
                             @ GHC.Types.Int
                             NetworkFunctions.readCommandLineArguments2
                             neighbours) #) } }) -}
-dcf6401bcfcbe42ed5a2afe44a5c4ceb
+e8aa05aa59b84cdf992b9e200ad78f31
   readCommandLineArguments2 :: GHC.Base.String -> GHC.Types.Int
   {- Arity: 1, Strictness: <L,U>,
      Unfolding: (\ (s :: GHC.Base.String) ->
@@ -1305,47 +1641,42 @@ dcf6401bcfcbe42ed5a2afe44a5c4ceb
                         @ GHC.Types.Int
                         (Text.ParserCombinators.ReadP.run
                            @ GHC.Types.Int
-                           NetworkFunctions.handleConnection16
+                           NetworkFunctions.parseMessage3
                            s) of wild {
-                   [] -> NetworkFunctions.handleConnection15
+                   [] -> NetworkFunctions.parseMessage2
                    : x ds
                    -> case ds of wild1 {
-                        [] -> x : ipv ipv1 -> NetworkFunctions.handleConnection14 } }) -}
+                        [] -> x : ipv ipv1 -> NetworkFunctions.parseMessage1 } }) -}
 6849acb5986287d14e933f6aec44bf5e
   readCommandLineArguments3 ::
     GHC.Types.IO (GHC.Types.Int, [GHC.Types.Int])
   {- Strictness: x -}
-3ac24b1aa4e5d7689c246868e611da53
-  recompute ::
-    DataTypes.Node
-    -> DataTypes.Lock -> DataTypes.Port -> GHC.Types.IO ()
-  {- Arity: 4,
-     Strictness: <S(S(S)LLLLLL),1*U(1*U(U),A,1*U(U),1*U(U),1*U(U),1*U(U),1*U(U))><L,1*U(1*U(U))><S(S),1*U(U)><S,U>,
+494d74a87f0af3a2b0154edc243ac783
+  recompute :: DataTypes.Node -> DataTypes.Port -> GHC.Types.IO ()
+  {- Arity: 3,
+     Strictness: <S(S(S)LLLLLL),1*U(1*U(U),A,1*U(U),1*U(U),1*U(U),1*U(U),1*U(U))><S(S),1*U(U)><S,U>,
      Unfolding: InlineRule (0, True, True)
                 NetworkFunctions.recompute1
                   `cast`
                 (<DataTypes.Node>_R
-                 ->_R <DataTypes.Lock>_R
                  ->_R <DataTypes.Port>_R
                  ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
-7a012e2e649281c2fd2095ce8eae365f
+08a613c414727daba78d7978d9533391
   recompute1 ::
     DataTypes.Node
-    -> DataTypes.Lock
     -> DataTypes.Port
     -> GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
-  {- Arity: 4,
-     Strictness: <S(S(S)LLLLLL),1*U(1*U(U),A,1*U(U),1*U(U),1*U(U),1*U(U),1*U(U))><L,1*U(1*U(U))><S(S),1*U(U)><S,U>,
+  {- Arity: 3,
+     Strictness: <S(S(S)LLLLLL),1*U(1*U(U),A,1*U(U),1*U(U),1*U(U),1*U(U),1*U(U))><S(S),1*U(U)><S,U>,
      Inline: [2],
-     Unfolding: InlineRule (4, True, False)
+     Unfolding: InlineRule (3, True, False)
                 (\ (w :: DataTypes.Node)
-                   (w1 :: DataTypes.Lock)
-                   (w2 :: DataTypes.Port)
-                   (w3 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
+                   (w1 :: DataTypes.Port)
+                   (w2 :: GHC.Prim.State# GHC.Prim.RealWorld) ->
                  case w of ww { DataTypes.Node ww1 ww2 ww3 ww4 ww5 ww6 ww7 ->
                  case ww1 of ww8 { GHC.Types.I# ww9 ->
-                 case w2 of ww10 { GHC.Types.I# ww11 ->
+                 case w1 of ww10 { GHC.Types.I# ww11 ->
                  NetworkFunctions.$wrecompute
                    ww9
                    ww3
@@ -1353,9 +1684,8 @@ dcf6401bcfcbe42ed5a2afe44a5c4ceb
                    ww5
                    ww6
                    ww7
-                   w1
                    ww11
-                   w3 } } }) -}
+                   w2 } } }) -}
 trusted: none
 require own pkg trusted: False
 module header:
