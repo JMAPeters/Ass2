@@ -25,11 +25,15 @@ makeNode (me, neighbours, allNodes, neighConnection, routingTable, estDist, estD
     Node me neighbours allNodes neighConnection routingTable estDist estDistNeigh
 
 type Port = Int    
-data Path = Local | Portnumber Port | Udef
+data Path = Local | Portnumber Port | Udef deriving (Eq)
 instance Show Path where
     show (Local) = "local"
     show (Portnumber port) = (show port)
     show (Udef) = "udef"
+-- instance Eq Path where
+--     (==) Local Local = True
+--     (==) (Portnumber port) (Portnumber port) = True
+--     (==) Udef Udef = True
 
 ---------------------------------------------------------------
 data Lock = MVarLock (MVar ())

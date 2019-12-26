@@ -68,7 +68,6 @@ listenForConnections serverSocket node lock = do
 
 handleConnection :: Socket -> Node -> Lock -> IO ()
 handleConnection connection node lock = do
-  -- This part has to be locked
   connectionClient <- socketToHandle connection ReadWriteMode
   messageClient <- hGetLine connectionClient
   let (port, func, message) = parseMessage messageClient
@@ -105,7 +104,6 @@ processDist node lock from (portNum:[dist]) = do
     -- if incomming node is in estDistNeigh, update the value, and if not insert in estDistNeigh
     _estDistNeigh <- readIORef (estDistNeigh node)
     -- if the key already exists the value is updated
-    --putStrLn (show distance)
     writeIORef (estDistNeigh node) (insert (from, portNumber) distance _estDistNeigh)
     recompute node portNumber
     interlocked lock "Unlock"
@@ -113,44 +111,49 @@ processDist node lock from (portNum:[dist]) = do
 
 recompute :: Node -> Port -> IO ()
 recompute node portNumber = do
-    if (portNumber /= (me node)) then do
-        -- 1 + min van alle sdis van alle neighs directe tot huidige node.
-        ((neighNode, _), dist) <- getMinEstDistNeigh portNumber (estDistNeigh node)
-        let d = 1 + dist
-        --putStrLn ("recompute: " ++ (show (me node)) ++ " " ++ (show portNumber) ++ " " ++ (show neighNode) ++ " " ++ (show dist) ++ " " ++ (show d))
-        _allNodes <- readIORef (allNodes node)
-        _estDist <- readIORef (estDist node)
-        if (d < (length _allNodes)) then do
-            --when (d /= (_estDist ! portNumber)) $ do
-              _routingTable <- readIORef (routingTable node)
-              writeIORef (routingTable node) (insert portNumber (Portnumber neighNode) _routingTable)
-              writeIORef (estDist node) (insert portNumber d _estDist)
-        else do
+  if (portNumber /= (me node)) then do
+      _allNodes <- readIORef (allNodes node)
+      ((neighNode, _), dist) <- getMinEstDistNeigh portNumber _allNodes (estDistNeigh node)
+      let d = 1 + dist
+      _estDist <- readIORef (estDist node)
+      if (d < (length _allNodes)) then do
+          --when (d /= (_estDist ! portNumber)) $ do
             _routingTable <- readIORef (routingTable node)
-            writeIORef (routingTable node) (insert portNumber Udef _routingTable)
-            writeIORef (estDist node) (insert portNumber (length _allNodes) _estDist)
+            writeIORef (routingTable node) (insert portNumber (Portnumber neighNode) _routingTable)
+            writeIORef (estDist node) (insert portNumber d _estDist)
+            putStrLn ("Distance to " ++ show portNumber ++ " is now " ++ show d ++ " via " ++ show neighNode)
+      else do
+          _routingTable <- readIORef (routingTable node)
+          writeIORef (routingTable node) (insert portNumber Udef _routingTable)
+          writeIORef (estDist node) (insert portNumber (length _allNodes) _estDist)
+          putStrLn ("Unreachable: " ++ show portNumber)
+      
+      when (d /= (_estDist ! portNumber) && (d <= (length _allNodes))) $ do
+        _neighConnection <- readIORef (neighConnection node)
+        let _neighConnection_ = (elems _neighConnection)
+        forM_  _neighConnection_ $ \_neigh -> do  
+            _neigh_ <- _neigh
+            hPutStrLn _neigh_ (show (me node) ++ " mydist " ++ show portNumber ++ " " ++ show d)
+  else do
+    _neighConnection <- readIORef (neighConnection node)
+    let _neighConnection_ = (elems _neighConnection)
+    forM_  _neighConnection_ $ \_neigh -> do  
+        _neigh_ <- _neigh
+        hPutStrLn _neigh_ (show (me node) ++ " mydist " ++ show portNumber ++ " " ++ "0")
 
-        when (d /= (_estDist ! portNumber)) $ do
-          _neighConnection <- readIORef (neighConnection node)
-          let _neighConnection_ = (elems _neighConnection)
-          forM_  _neighConnection_ $ \_neigh -> do  
-              _neigh_ <- _neigh
-              hPutStrLn _neigh_ (show (me node) ++ " mydist " ++ show portNumber ++ " " ++ show d)
-    else do
-      _neighConnection <- readIORef (neighConnection node)
-      let _neighConnection_ = (elems _neighConnection)
-      forM_  _neighConnection_ $ \_neigh -> do  
-          _neigh_ <- _neigh
-          hPutStrLn _neigh_ (show (me node) ++ " mydist " ++ show portNumber ++ " " ++ "0")
-
-getMinEstDistNeigh :: Port -> IORef (HashMap (Port, Port) Int) -> IO ((Port,Port), Int)
-getMinEstDistNeigh portNumber estDistNeigh = do
+getMinEstDistNeigh :: Port -> [Int] -> IORef (HashMap (Port, Port) Int) -> IO ((Port,Port), Int)
+getMinEstDistNeigh portNumber allNodes estDistNeigh = do
     _estDistNeigh <- readIORef estDistNeigh
     let list = toList _estDistNeigh
         portList = Prelude.filter ((==portNumber).snd.fst) list
         minList = sortBy (comparing $ snd) portList
-        tup = head minList
+        tup = getTup allNodes minList
     return tup
+
+getTup :: [Int] -> [((Port, Port), Int)] -> ((Port, Port), Int)
+getTup allNodes [] = ((0,0), (length allNodes))
+getTup _ [x] = x
+getTup _ (x:_) = x
 
 processMessage :: Node -> Lock -> String -> Port -> String -> IO ()
 processMessage node lock command port message = do
@@ -161,9 +164,10 @@ processMessage node lock command port message = do
         _routingTable <- readIORef (routingTable node)
         _neighConnection <- readIORef (neighConnection node)
         if (port `member` _routingTable) then do
-            let (Portnumber neigh) = (_routingTable ! port)
-            neighCon <- (_neighConnection ! neigh)
-            hPutStrLn neighCon ((show port) ++ " " ++ command ++ " " ++ message)
+          let (Portnumber neigh) = (_routingTable ! port)
+          neighCon <- (_neighConnection ! neigh)
+          putStrLn ("Message for " ++ show port ++ " is relayed to " ++ show neigh)
+          hPutStrLn neighCon ((show port) ++ " " ++ command ++ " " ++ message)
         else
             putStrLn "Port number is not known"
     interlocked lock "Unlock"
@@ -175,7 +179,6 @@ processRepair node lock portNumber = do
     writeIORef (neighbours node) (portNumber:_neighbours)
     _neighConnection <- readIORef (neighConnection node)
     writeIORef (neighConnection node) (insert portNumber (connectTo portNumber) _neighConnection)
-
     _allNodes <- readIORef (allNodes node)
     forM_ _allNodes $ \_node -> do
         _estDistNeigh <- readIORef (estDistNeigh node)
@@ -202,4 +205,4 @@ processDisconnect node lock portNumber = do
   interlocked lock "Unlock"
 
 filterHashMap :: Port -> HashMap (Port, Port) Int -> HashMap (Port, Port) Int
-filterHashMap portNumber estDistNeigh = filterWithKey (\(portNum, _) _ -> portNum /= portNumber) estDistNeigh 
+filterHashMap portNumber = filterWithKey (\(portNum, _) _ -> portNum /= portNumber)

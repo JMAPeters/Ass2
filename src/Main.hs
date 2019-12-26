@@ -59,10 +59,9 @@ main = do
   forM_  _neighConnection_ $ \_neigh -> do
       _neigh_ <- _neigh
       hPutStrLn _neigh_ (show me ++ " mydist " ++ show me ++ " " ++ show 0)
-------------------------------------------------------------------------
-  handleInput node lock
 
-  threadDelay 1000000000
+      
+  handleInput node lock
 
 -------- end of main -------------
 
@@ -93,21 +92,41 @@ handleInput node lock = do
         writeIORef (neighbours node) (portNumber : _neighbours)
         _neighConnection <- readIORef (neighConnection node)
         writeIORef (neighConnection node) (insert portNumber (connectTo portNumber) _neighConnection)
-        
+        _allNodes <- readIORef (allNodes node)
+        when (elem portNumber _allNodes) $ do
+          writeIORef (neighbours node) (portNumber : _allNodes)
+
         _neighConnection <- readIORef (neighConnection node)
         _neighCon <- (_neighConnection ! portNumber)
         hPutStrLn _neighCon (show (me node) ++ " repair")
 
+        _allNodes <- readIORef (allNodes node)
+        forM_ _allNodes $ \_node -> do
+            _estDistNeigh <- readIORef (estDistNeigh node)
+            writeIORef (estDistNeigh node) (insert (portNumber, _node) (length _allNodes) _estDistNeigh)
+            _neighConnection <- readIORef (neighConnection node)
+            _neighCon <- (_neighConnection ! portNumber)
+            _estDist <- readIORef (estDist node)
+            hPutStrLn _neighCon (show (me node) ++ " mydist " ++ show _node ++ " " ++ (show (_estDist ! _node)))
+
+        putStrLn ("Connected: " ++ show portNumber)
+
         interlocked lock "Unlock"
     ("D") -> do
-      interlocked lock "Lock"
-      _neighConnection <- readIORef (neighConnection node)
-      _neighCon <- (_neighConnection ! portNumber)
-      hPutStrLn _neighCon (show (me node) ++ " disconnect")
-      interlocked lock "Unlock"
+        interlocked lock "Lock"
+        _routingTable <- readIORef (routingTable node)
+        if (portNumber `member` _routingTable && portNumber /= (me node)) then do
+          _neighConnection <- readIORef (neighConnection node)
+          _neighCon <- (_neighConnection ! portNumber)
+          hPutStrLn _neighCon (show (me node) ++ " disconnect")
+          putStrLn ("Disconnected: " ++ show portNumber)
+        else
+          putStrLn "Port number is not known"
+        interlocked lock "Unlock"
+        processDisconnect node lock portNumber
 
-      processDisconnect node lock portNumber
   handleInput node lock
+-------------------------------------------------------------------------
 
 parseInput :: String -> (String, Port, String)
 parseInput input = (func, port, message)
@@ -123,15 +142,5 @@ printTable node portNumber = do
     let dist = _estDist ! portNumber
     _routingTable <-readIORef (routingTable node)
     let via = _routingTable ! portNumber
-    putStrLn ((show portNumber) ++ " " ++ (show dist) ++ " " ++ (show via))
-
-
-    {-_allNodes <- readIORef (allNodes node)
-        forM_ _allNodes $ \_node -> do
-            _estDistNeigh <- readIORef (estDistNeigh node)
-            writeIORef (estDistNeigh node) (insert (portNumber, _node) (length _allNodes) _estDistNeigh)
-            _neighConnection <- readIORef (neighConnection node)
-            _neighCon <- (_neighConnection ! portNumber)
-            _estDist <- readIORef (estDist node)
-            hPutStrLn _neighCon (show (me node) ++ " mydist " ++ show _node ++ " " ++ (show (_estDist ! _node)))
-         -}
+    when (via /= Udef) $ do
+        putStrLn ((show portNumber) ++ " " ++ (show dist) ++ " " ++ (show via))

@@ -14,9 +14,16 @@ has changed in recompute
 vragen input & waarom we niet in de cmd kunnen typen
 
 
+Ergens deadlocked het process
 
 
 
+start cmd /k stack run -- 1100 1102 1101
+start cmd /k stack run -- 1101 1100 1102
+start cmd /k stack run -- 1102 1100 1101 1103 1104
+start cmd /k stack run -- 1103 1105 1102
+start cmd /k stack run -- 1104 1102 1105
+start cmd /k stack run -- 1105 1104 1103
 
 
 

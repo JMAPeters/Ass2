@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2019-12-11 15:15:24.8974707 UTC
+2019-12-12 14:48:07.5077846 UTC
 
 interface main:DataTypes 8065
-  interface hash: c67ecbad34b8422a46f9647f8f4aa2d8
-  ABI hash: dadd4f7d87061aecd84defbe1057470d
+  interface hash: 28feb042d2e4390aa7eb6c54738c98c6
+  ABI hash: ea44efec5024321692dbf6588e9ef1c6
   export-list hash: 6f4e5eb89d776ab7e359de84ce58688f
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: 36bae2b893636dcae15825da56d2f484
@@ -63,12 +63,54 @@ import  -/  base-4.12.0.0:GHC.Show fa6032f3f820e8e8ec87b97bdca4e160
 import  -/  base-4.12.0.0:Prelude 80c668cb99fbafebd524c5e897f8c982
 import  -/  base-4.12.0.0:System.Environment 045df705c1f205b31d24a0f6340ea2db
 import  -/  base-4.12.0.0:System.IO 51ffc52e2e8495d5c7b596557cf2be89
+import  -/  ghc-prim-0.5.3:GHC.Classes 6002495dc43e58d28c87e5e5e058752a
 import  -/  ghc-prim-0.5.3:GHC.Types 57064c9f957b09bc2e360061ad5cae0b
 import  -/  network-2.8.0.1:Network.Socket cccb3c178b1f8d4043b518ed5f994246
 import  -/  stm-2.5.0.0:Control.Concurrent.STM c418f6f5d5174c7fcc2a4eb1734356a3
 import  -/  unordered-containers-0.2.10.0:Data.HashMap.Base bb401e756b294adc833e9f91ee987a2e
 import  -/  unordered-containers-0.2.10.0:Data.HashMap.Lazy 09ee012ce2aeb80cf8693cad08fc6338
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
+  $fEqPath :: GHC.Classes.Eq DataTypes.Path
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ DataTypes.Path DataTypes.$fEqPath_$c== DataTypes.$fEqPath_$c/= -}
+21e69455f4b398647c05932e8c9b037d
+  $fEqPath_$c/= :: DataTypes.Path -> DataTypes.Path -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Inline: (sat-args=2),
+     Unfolding: InlineRule (2, False, False)
+                (\ (x :: DataTypes.Path) (y :: DataTypes.Path) ->
+                 case x of wild {
+                   DataTypes.Local
+                   -> case y of wild1 {
+                        DEFAULT -> GHC.Types.True DataTypes.Local -> GHC.Types.False }
+                   DataTypes.Portnumber a1
+                   -> case y of wild1 {
+                        DEFAULT -> GHC.Types.True
+                        DataTypes.Portnumber b1
+                        -> case GHC.Classes.eqInt a1 b1 of wild2 {
+                             GHC.Types.False -> GHC.Types.True
+                             GHC.Types.True -> GHC.Types.False } }
+                   DataTypes.Udef
+                   -> case y of wild1 {
+                        DEFAULT -> GHC.Types.True DataTypes.Udef -> GHC.Types.False } }) -}
+21e69455f4b398647c05932e8c9b037d
+  $fEqPath_$c== :: DataTypes.Path -> DataTypes.Path -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: (\ (ds :: DataTypes.Path) (ds1 :: DataTypes.Path) ->
+                 case ds of wild {
+                   DataTypes.Local
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False DataTypes.Local -> GHC.Types.True }
+                   DataTypes.Portnumber a1
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False
+                        DataTypes.Portnumber b1 -> GHC.Classes.eqInt a1 b1 }
+                   DataTypes.Udef
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False DataTypes.Udef -> GHC.Types.True } }) -}
+21e69455f4b398647c05932e8c9b037d
   $fShowPath :: GHC.Show.Show DataTypes.Path
   DFunId
   {- Strictness: m, Inline: CONLIKE,
@@ -89,7 +131,7 @@ b888a24a09a7db7b82a3fdc3e86bd8ef
 6380c6e92c99b117aabe1e8390e236fa
   $fShowPath4 :: GHC.Prim.Addr#
   {- HasNoCafRefs, Unfolding: ("local"#) -}
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
   $fShowPath_$cshow :: DataTypes.Path -> GHC.Base.String
   {- Arity: 1, Strictness: <S,1*U>,
      Unfolding: InlineRule (1, True, False)
@@ -98,7 +140,7 @@ aff8094f35f218b4b19aa6cda71db463
                    DataTypes.Local -> DataTypes.$fShowPath3
                    DataTypes.Portnumber port -> GHC.Show.$fShowInt_$cshow port
                    DataTypes.Udef -> DataTypes.$fShowPath1 }) -}
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
   $fShowPath_$cshowList :: [DataTypes.Path] -> GHC.Show.ShowS
   {- Arity: 2, Strictness: <S,1*U><L,U>,
      Unfolding: InlineRule (2, True, False)
@@ -108,7 +150,7 @@ aff8094f35f218b4b19aa6cda71db463
                    DataTypes.$w$cshowsPrec
                    ls
                    s) -}
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
   $fShowPath_$cshowsPrec ::
     GHC.Types.Int -> DataTypes.Path -> GHC.Show.ShowS
   {- Arity: 3, Strictness: <L,A><S,1*U><L,1*U>, Inline: [2],
@@ -285,7 +327,7 @@ c9c7c57ac728da4d2e9da16b7b7a9258
 87d9397b45677f0f3d09b4c75563ad57
   $trModule4 :: GHC.Prim.Addr#
   {- HasNoCafRefs, Unfolding: ("main"#) -}
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
   $w$cshowsPrec ::
     DataTypes.Path -> GHC.Base.String -> [GHC.Types.Char]
   {- Arity: 2, Strictness: <S,1*U><L,1*U>, Inline: [2],
@@ -336,7 +378,7 @@ aff8094f35f218b4b19aa6cda71db463
                       (# s2#, GHC.Tuple.() #) } }) -}
 c0d1d948e3b03977e141e8626010c1b0
   data Lock = MVarLock (GHC.MVar.MVar ())
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   data Node
     = Node {me :: DataTypes.Port,
             neighbours :: GHC.IORef.IORef [DataTypes.Port],
@@ -351,11 +393,11 @@ c289d91df4ad856d9b73e4bf244515ec
             estDistNeigh :: GHC.IORef.IORef
                               (Data.HashMap.Base.HashMap
                                  (DataTypes.Port, DataTypes.Port) GHC.Types.Int)}
-aff8094f35f218b4b19aa6cda71db463
+21e69455f4b398647c05932e8c9b037d
   data Path = Local | Portnumber DataTypes.Port | Udef
 352e18570b51b10ff1762f7515540820
   type Port = GHC.Types.Int
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   allNodes :: DataTypes.Node -> GHC.IORef.IORef [DataTypes.Port]
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
@@ -364,7 +406,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds3 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   estDist ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -376,7 +418,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds6 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   estDistNeigh ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -445,7 +487,7 @@ dbe2f9910dc23c949d73e4916ee0bd2c
 d89b5c310183e4eb660038c8c52e6c36
   interlocked5 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString# DataTypes.$tcLock2) -}
-44cf9e398fbc779d03c29dc467519599
+b6c31deac071afd18c85f10477f91655
   makeNode ::
     (DataTypes.Port, GHC.IORef.IORef [DataTypes.Port],
      GHC.IORef.IORef [DataTypes.Port],
@@ -483,7 +525,7 @@ d89b5c310183e4eb660038c8c52e6c36
                    routingTable1
                    estDist1
                    estDistNeigh1 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   me :: DataTypes.Node -> DataTypes.Port
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
@@ -492,7 +534,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds1 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   neighConnection ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -505,7 +547,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds4 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   neighbours :: DataTypes.Node -> GHC.IORef.IORef [DataTypes.Port]
   RecSel Left DataTypes.Node
   {- Arity: 1, HasNoCafRefs,
@@ -514,7 +556,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds2 }) -}
-c289d91df4ad856d9b73e4bf244515ec
+cc2a5c9b30ebf4d0401f733c49f05f26
   routingTable ::
     DataTypes.Node
     -> GHC.IORef.IORef
@@ -526,6 +568,7 @@ c289d91df4ad856d9b73e4bf244515ec
                 (\ (ds :: DataTypes.Node) ->
                  case ds of wild { DataTypes.Node ds1 ds2 ds3 ds4 ds5 ds6 ds7 ->
                  ds5 }) -}
+instance GHC.Classes.Eq [DataTypes.Path] = DataTypes.$fEqPath
 instance GHC.Show.Show [DataTypes.Path] = DataTypes.$fShowPath
 trusted: none
 require own pkg trusted: False
